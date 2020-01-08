@@ -2,6 +2,7 @@
 
 #include "fmj_types.h"
 
+
 struct GPUInfo
 {
     

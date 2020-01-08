@@ -1,5 +1,8 @@
 #if !defined(FMJ_TYPES_H)
+
 #include <stdint.h>
+#include <stdbool.h>
+#include <math.h>
 
 #define APIDEF
 
@@ -25,7 +28,7 @@ typedef intptr_t imm;
 #define ARRAYCOUNT(Array) sizeof(Array) / sizeof((Array)[0])
 
 #define FMJKILOBYTES(v) (v * 1024LL)
-#define FMJMEGABYTES(v) (FMJ_KILOBYTES(v) * 1024LL)
+#define FMJMEGABYTES(v) (FMJKILOBYTES(v) * 1024LL)
 #define FMJGIGABYTES(v) (FMJMEGABYTES(v) * 1024LL)
 #define FMJTERABYTES(v) (FMJGIGABYTES(v) * 1024LL)
 
@@ -49,50 +52,72 @@ enum FMJType
     fmj_type_b32,
     fmj_type_memory_index,
 };
+//OS API
+void* fmj_os_allocate(umm size);
+//ENDI OS API
 
-struct FMJString
-{
-    u32 null_terminated;
-    u32 length;
-    char* string;
-}typedef FMJString;
-
-APIDEF u32 fmj_string_length(FMJString* String);
-APIDEF u32 fmj_char_length(char* String);
-
-APIDEF u32 fmj_string_length_safe(FMJString* String,u32 SafetyLength);
-APIDEF u32 fmj_char_length_safe(char* String,u32 SafetyLength);
-
+//MEMORY API
 struct FMJMemoryArena
 {
     void* base;
     umm size;
     u32 used;
     u32 temp_count;
-}typedef MemoryArena;
+}typedef FMJMemoryArena;
 
 enum FMJMemoryArenaPushFlags
 {
-    PartitionFlag_None = 0x0,
-    PartitionFlag_ClearToZero = 0x1,
+    fmj_arena_push_params_flag_none = 0x0,
+    fmj_arena_push_params_flag_clear_to_zero = 0x1,
 };
 
 struct FMJMemoryArenaPushParams
 {
-    u32 Flags;
-    u32 Alignment;
+    u32 flags;
+    u32 alignment;
 } typedef FMJMemoryArenaPushParams;
 
+#define PUSHARRAY(Partition,Type,push_params,Count,...) (Type*)fmj_arena_push_size_(Partition,sizeof(Type)*Count,push_params,## __VA_ARGS__)
+#define PUSHSTRUCT(Partition,Type,push_params,...) (Type*)fmj_arena_push_size_(Partition,sizeof(Type),push_params,## __VA_ARGS__)
+#define PUSHSIZE(Partition,Size,push_params,...) fmj_arena_push_size_(Partition,Size,push_params,## __VA_ARGS__)
+void* fmj_arena_push_size_(FMJMemoryArena* arena,umm size,FMJMemoryArenaPushParams params);
+void fmj_arena_clear_size(FMJMemoryArena *arena,umm size);
+umm fmj_arena_get_alignment_offset(FMJMemoryArena *arena,umm alignment);
+    
+void* fmj_arena_get_pointer(FMJMemoryArena arena);
+FMJMemoryArenaPushParams fmj_arena_push_params_no_clear();
+FMJMemoryArena fmj_arena_init(umm size, void* base);
+FMJMemoryArena fmj_arena_allocate(umm size);
 
-#define PUSHARRAY(Partition,Type,push_params,Count,...) (Type*)PushSize_(Partition,sizeof(Type)*Count,push_params,## __VA_ARGS__)
-#define PUSHSTRUCT(Partition,Type,push_params,...) (Type*)PushSize_(Partition,sizeof(Type),push_params,## __VA_ARGS__)
-#define PUSHSIZE(Partition,Size,push_params,...) PushSize_(Partition,Size,push_params,## __VA_ARGS__)
-void* PushSize_(MemoryArena*arena, umm size,FMJMemoryArenaPushParams push_params);
+FMJMemoryArena fmj_arena_init(umm size, void* base);
+FMJMemoryArena fmj_arena_allocate(umm size);
 
-APIDEF FMJString fmj_string_create(char* c,MemoryArena* Memory);
+//END MEMORY API
 
-APIDEF void* fmj_get_arena_pointer(MemoryArena arena);
+//Strings API
+struct FMJString
+{
+    bool null_terminated;
+    u32 length;
+    char* string;
+}typedef FMJString;
 
-FMJMemoryArenaPushParams fmj_push_params_no_clear();
-#define FMJ_TYPE_H
+//unsafe
+APIDEF u32 fmj_string_length(FMJString* String);
+APIDEF u32 fmj_string_char_length(char* String);
+//safe version
+APIDEF u32 fmj_string_length_safe(FMJString* String,u32 SafetyLength);
+APIDEF u32 fmj_string_char_length_safe(char* String,u32 SafetyLength);
+//init
+APIDEF FMJString fmj_string_create(char* c,FMJMemoryArena* Memory);
+APIDEF FMJString fmj_string_create_from_ptr(char* start,char* end,FMJMemoryArena* arena);
+APIDEF FMJString fmj_string_create_from_length(char* start,umm length,FMJMemoryArena* arena);
+
+APIDEF bool fmj_string_cmp(FMJString a, FMJString b);
+APIDEF bool fmj_string_cmp_char(FMJString a,const char* b);
+APIDEF bool fmj_string_cmp_char_to_char(const char* a,const char* b,u32 max_itr);
+    
+//End Strings API
+
+#define FMJ_TYPES_H
 #endif

@@ -86,4 +86,18 @@ FMJMemoryArena fmj_arena_allocate(umm size)
     return arena;
 }
 
+void fmj_arena_deallocate(FMJMemoryArena *arena, bool clear_mem_to_zero)
+{
+    //Assert
+    arena->used = 0;
+    if (clear_mem_to_zero)
+    {
+        fmj_clear_to_zero(arena->base,(umm)arena->size);
+    }
+}
+
+void fmj_arena_free(FMJMemoryArena* arena)
+{
+    fmj_os_deallocate(arena->base,arena->size);    
+}
 

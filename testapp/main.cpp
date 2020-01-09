@@ -36,6 +36,35 @@ int main()
 
     comp_result = fmj_string_cmp_char(test_string,cc);
     printf("string a %s string b %s comparision is %d. \n",test_string.string,cc,(int)comp_result);
+
+    char* fake_path = "fakepath/with/fake/filename.png";
+    FMJString file_name = fmj_string_get_filename(fake_path,fmj_string_char_length_safe(fake_path,100),&test_string_arena);
+    printf("extracted filename is %s. \n",file_name.string);
+
+    FMJString file_name_ext = fmj_string_get_extension(file_name,&test_string_arena,false);
+    printf("extracted filename extension is %s. \n",file_name_ext.string);
+
+    FMJString file_name_stripped_ext = fmj_string_strip_extension(file_name,&test_string_arena);
+    printf("stripped filename extension is %s. \n",file_name_stripped_ext.string);
+
+    FMJString padded_string = fmj_string_pad_right(file_name_stripped_ext,'-',10,&test_string_arena);
+    printf("padded string is %s. \n",padded_string.string);
+
+    FMJString appended_string = fmj_string_append(padded_string,file_name_ext,&test_string_arena);
+    printf("front %s , back %s appended string is %s. \n",padded_string.string,file_name_ext.string,appended_string.string);
+
+    FMJFixedBuffer fbtest = fmj_fixed_buffer_init(1000,sizeof(u64),8);
+    u64 element = 1000;
+    u64 index = fmj_fixed_buffer_push(&fbtest,(void*)&element);
+    u64 fb_result = fmj_fixed_buffer_get(u64,&fbtest,index);     
+    printf("Fixed Buffer test result %llu. \n",fb_result);
+
+    FMJStretchBuffer sb_test = fmj_stretch_buffer_init(1,sizeof(u64),8);
+    fb_result += 1000;
+    index = fmj_stretch_buffer_push(&sb_test,(void*)&fb_result);
+    fb_result = fmj_stretch_buffer_get(u64,&sb_test,index);
+    printf("Stretchy Buffer test result %llu. \n",fb_result);    
+    
     char buf[1000];    
     fgets(buf,1000,stdin);
     return 0;

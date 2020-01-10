@@ -64,6 +64,16 @@ int main()
     index = fmj_stretch_buffer_push(&sb_test,(void*)&fb_result);
     fb_result = fmj_stretch_buffer_get(u64,&sb_test,index);
     printf("Stretchy Buffer test result %llu. \n",fb_result);    
+
+//TEST HASHTABLE
+
+    FMJHashTable test_ht = fmj_hashtable_init(4096,u64);
+    u64 test_data = 777;
+    u64 test_key = 1000;
+    fmj_hashtable_add(&test_ht,&test_key,sizeof(u64),&test_data);
+
+    u64 data = *fmj_hashtable_get(u64,&test_ht,&test_key,sizeof(u64));
+    printf("hash test result %llu. \n",data);
     
     char buf[1000];    
     fgets(buf,1000,stdin);

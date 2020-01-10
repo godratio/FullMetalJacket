@@ -75,6 +75,24 @@ void* fmj_fixed_buffer_get_(FMJFixedBuffer* buffer, u64 index)
 	return  (uint8_t*)buffer->base + (index * buffer->unit_size);
 }
 
+void* fmj_fixed_buffer_get_any_(FMJFixedBuffer* buffer, u64 index)
+{
+	ASSERT(buffer);
+	if (index < 0 || index > buffer->count - 1 || buffer->capacity == 0)return 0;
+	return  (uint8_t*)buffer->base + (index * buffer->unit_size);
+}
+
+void fmj_fixed_buffer_pop(FMJFixedBuffer* buffer)
+{
+    ASSERT(buffer);
+    if(buffer->count == 0)return;
+    ASSERT(buffer->mem_arena.size > 0);
+    ASSERT((buffer->mem_arena.used - buffer->unit_size) >= 0) ;
+    buffer->mem_arena.used -= buffer->unit_size;
+	buffer->total_size -= buffer->unit_size;
+	buffer->count--;
+}
+
 FMJStretchBuffer fmj_stretch_buffer_init(umm capacity,umm unit_size,u32 alignment)
 {
 //    alignment = 4;
@@ -149,9 +167,6 @@ void* fmj_stretch_buffer_get_ptr_(FMJStretchBuffer* buffer,u64 index)
     return fmj_fixed_buffer_get_(&buffer->fixed,index);
 }
 
-//NOTE(Ray):This is not to be used on its own!
-//WARNING(RAY):DONT USE THIS FUNCTION DIRECTLY !!! IF YOu need stuff like this use YoyoVector this buffer thing is meant to be
-//more strict in what it allows no borrow checking here is performed.
 void* fmj_stretch_buffer_get_(FMJStretchBuffer* buffer,u64 index)
 {
 	ASSERT(buffer);
@@ -178,6 +193,12 @@ void fmj_fixed_buffer_clear_item(FMJFixedBuffer* b,u64 i)
 			index++;
 		}
 	}
+}
+
+void fmj_stretch_buffer_pop(FMJStretchBuffer* b)
+{
+    ASSERT(b);
+    fmj_fixed_buffer_pop(&b->fixed);    
 }
 
 void fmj_stretch_buffer_clear_item(FMJStretchBuffer* s,u64 i)

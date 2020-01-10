@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
+#include "external/meow_hash/meow_hash_x64_aesni.h"
 
 #define APIDEF
 
@@ -157,12 +158,18 @@ struct FMJFixedBuffer
 
 #define fmj_fixed_buffer_get_ptr(type,buffer,index) (type*)fmj_fixed_buffer_get_(buffer,index);
 #define fmj_fixed_buffer_get(type,buffer,index) *(type*)fmj_fixed_buffer_get_(buffer,index);
+#define fmj_fixed_buffer_get_any(type,buffer,index) (type*)fmj_fixed_buffer_get_any_(buffer,index);
 FMJFixedBuffer fmj_fixed_buffer_init(umm capacity,umm unit_size,u32 alignment);
 u64 fmj_fixed_buffer_push(FMJFixedBuffer* buffer, void* element);
 void* fmj_fixed_buffer_get_(FMJFixedBuffer* buffer, u64 index);
+//NOTE(ray):main difference is that any can access any where inside the buffer
+//regardless of push count but based on capacity.
+void* fmj_fixed_buffer_get_any_(FMJFixedBuffer* buffer, u64 index);
 void fmj_fixed_buffer_clear(FMJFixedBuffer *buffer);
 void fmj_fixed_buffer_free(FMJFixedBuffer *buffer);
+void fmj_fixed_buffer_pop(FMJFixedBuffer* buffer);
 
+    
 //Stretchy 
 struct FMJStretchBuffer
 {
@@ -174,88 +181,74 @@ struct FMJStretchBuffer
 
 FMJStretchBuffer fmj_stretch_buffer_init(umm capacity,umm unit_size,u32 alignment);
 u64 fmj_stretch_buffer_push(FMJStretchBuffer* buffer, void* element);
+
 #define fmj_stretch_buffer_check_out(type,buffer,index) (type*)fmj_stretch_buffer_get_ptr_(buffer,index);
 #define fmj_stretch_buffer_get(type,buffer,index) *(type*)fmj_stretch_buffer_get_(buffer,index);
 void* fmj_stretch_buffer_get_ptr_(FMJStretchBuffer* buffer,u64 index);
-//NOTE(Ray):This is not to be used on its own!
-//WARNING(RAY):DONT USE THIS FUNCTION DIRECTLY !!! IF YOu need stuff like this use YoyoVector this buffer thing is meant to be
-//more strict in what it allows no borrow checking here is performed.
-void* fmj_stretch_buffer_get_(FMJStretchBuffer* buffer,u64 index);
 void fmj_stretch_buffer_check_in(FMJStretchBuffer* buffer);
+
+//WARNING(ray):You get no protection when using this function.
+void* fmj_stretch_buffer_get_(FMJStretchBuffer* buffer,u64 index);
 void fmj_fixed_buffer_clear_item(FMJFixedBuffer* b,u64 i);
 void fmj_stretch_buffer_clear_item(FMJStretchBuffer* s,u64 i);
 void fmj_stretch_buffer_clear(FMJStretchBuffer *b);
 void fmj_stretch_buffer_free(FMJStretchBuffer *b);
+void fmj_stretch_buffer_pop(FMJStretchBuffer* b);
 //End Buffer/Collections/DataStructures API
 
 //BEGIN HASHTABLE
-struct YoyoHashKeyEntry
+struct FMJHashKeyEntry
 {
-	uint64_t value_index;
-    uint64_t backing_index;
-    bool indexed = false;//TODO(Ray):Try to get rid of this flag laters
-    bool tombstoned = false;//TODO(Ray):Indexed and tombstoned should be in a state index variable
-	uint32_t collision_count;
+	u64 value_index;
+    u64 backing_index;
+    bool indexed;//TODO(Ray):Try to get rid of this flag laters
+    bool tombstoned;//TODO(Ray):Indexed and tombstoned should be in a state index variable
+	u32 collision_count;
     int collision_head_index;
-    struct YoyoHashCollisionEntry* collision_head;
-};
+    struct FMJHashCollisionEntry* collision_head;
+} typedef FMJHashKeyEntry;
 
-struct YoyoHashValueEntry
+struct FMJHashValueEntry
 {
 	void* value;
-};
+} typedef FMJHashValueEntry;
 
-struct YoyoHashCollisionEntry
+struct FMJHashCollisionEntry
 {
-    YoyoHashKeyEntry key;
-    YoyoHashValueEntry value;
-    memory_index index;
-    //TODO(Ray):Using an int here limits the size of our indexing size for the tables.
-    //But doing the neg num thing for now so leaving it as is my use case will be well within that range.
-    int next_index;//next index rather than a pointer for resizing of the backing array without patching pointerns
-};
+    FMJHashKeyEntry key;
+    FMJHashValueEntry value;
+    umm index;
+    int next_index;
+} typedef FMJHashCollisionEntry;
 
-struct YoyoHashAddElementResult
+struct FMJHashAddElementResult
 {
     bool is_succeed;
-    uint64_t result;
-};
+    u64 result;
+} typedef FMJHashAddElementResult;
 
-struct YoyoHashTable
+struct FMJHashTable
 {
-//    YoyoVector key_backing_array;
-    YoyoBufferStretchy key_backing_array;
-	YoyoVector keys;
-	YoyoVector values;
-    YoyoVector collisions;
-    YoyoVector collision_free_list;
-    
-    uint64_t table_size;
-    uint64_t collision_count;
+    FMJStretchBuffer key_backing_array;
+	FMJFixedBuffer keys;
+	FMJFixedBuffer values;
+    FMJStretchBuffer collisions;
+    FMJStretchBuffer collision_free_list;
+    u64 table_size;
+    u64 collision_count;
+    u64 key_size;
+    u64 key_value;
+} typedef FMJHashTable;
 
-    uint64_t key_size;
-    uint64_t key_value;
-};
-
-#define YoyoInitHashTableKeyType(start_count,key_type) YoyoInitHashTable(start_count,sizeof(key_type))
-static YoyoHashTable YoyoInitHashTable(uint64_t start_count,uint64_t key_size)
-{
-	YoyoHashTable result = {};
-    result.collision_free_list = YoyoInitVector(1, uint64_t, false);
-//    result.key_backing_array = YoyoInitVectorSize(1,key_size,false);
-    result.key_backing_array = StrBufInit(1,key_size);
-    
-    result.key_size = key_size;
-    Assert(key_size == result.key_backing_array.fixed.unit_size);
-//    result.key_backing_array.allow_resize = false;
-	result.keys = YoyoInitVector(start_count,YoyoHashKeyEntry,false);
-	result.keys.allow_resize = false;
-	result.values = YoyoInitVector(start_count,YoyoHashValueEntry,false);
-	result.values.allow_resize = false;
-    result.table_size = start_count;
-    result.collisions = YoyoInitVector(1,YoyoHashCollisionEntry,false);
-	return result;
-}
+#define fmj_hashtable_init(start_count,key_type) fmj_hashtable_init_(start_count,sizeof(key_type))
+FMJHashTable fmj_hashtable_init_(u64 start_count,u64 key_size);
+u64 fmj_hashtable_meow_hash_func(void* buffer,uint64_t size);
+u64 fmj_hashtable_hash_func(FMJHashTable* h_table,void* buffer,uint64_t size);
+FMJHashAddElementResult fmj_hashtable_add(FMJHashTable* h_table,void* key,u64 key_size,void* element);
+#define fmj_hashtable_get(type,table,in,size) (type*)fmj_hashtable_get_(table,in,size)
+void* fmj_hashtable_get_(FMJHashTable* h_table,void* key,u64 size);
+void fmj_hashtable_remove(FMJHashTable* h_table,void* key);
+bool fmj_hash_contains(FMJHashTable* h_table,void* key,uint64_t size);
 
 //END HASHTABLE
 

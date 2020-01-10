@@ -1,4 +1,10 @@
 call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+@echo off
+
+setlocal
+
+where cl >nul 2>nul
+IF %ERRORLEVEL% NEQ 0 (echo WARNING: cl is not in the path - please set up Visual Studio to do cl builds)
 
 IF NOT EXIST build mkdir build
 pushd build

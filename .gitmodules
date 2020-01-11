@@ -1,0 +1,2 @@
+[submodule "src/external/meow_hash"]
+	url = https://github.com/cmuratori/meow_hash.git

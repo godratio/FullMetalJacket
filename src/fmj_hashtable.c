@@ -212,7 +212,7 @@ void* fmj_hashtable_get_(FMJHashTable* h_table,void* key,u64 size)
                         result = at->value.value;
                 }
                 fmj_stretch_buffer_check_in(&h_table->key_backing_array);
-                at = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_ptr_(&h_table->collisions,at->next_index);
+                at = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_(&h_table->collisions,at->next_index);
             }
         }
 	}
@@ -282,7 +282,7 @@ void fmj_hashtable_remove(FMJHashTable* h_table,void* key)
                 //after we check for a match we set up the next iteration
                 //we keep one prev_at and
                 prev_at = at;
-                at = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_ptr_(&h_table->collisions,at->next_index);
+                at = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_(&h_table->collisions,at->next_index);
                 fmj_stretch_buffer_check_in(&h_table->key_backing_array);                    
             }
 
@@ -335,7 +335,7 @@ void fmj_hashtable_remove(FMJHashTable* h_table,void* key)
     }
 }
 
-bool fmj_hash_contains(FMJHashTable* h_table,void* key,uint64_t size)
+bool fmj_hashtable_contains(FMJHashTable* h_table,void* key,uint64_t size)
 {
     uint64_t hash_index = fmj_hashtable_hash_func(h_table,key,size);
     FMJHashKeyEntry* lu = fmj_fixed_buffer_get_any(FMJHashKeyEntry,&h_table->keys,hash_index);

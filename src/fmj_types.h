@@ -1,7 +1,13 @@
-#if !defined(FMJ_TYPES_H)
+//NOTE(ray):We will not be pursuing this any further for now as its assumed any games
+//that I would make will use the preexisting math lib in C++.
+//I may however decide against that come back here and finisht this or use someone elses
+//C mathlib
 
+#if !defined(FMJ_TYPES_H)
+#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <math.h>
 #include "external/meow_hash/meow_hash_x64_aesni.h"
 
@@ -68,7 +74,10 @@ void fmj_os_deallocate(void* mem,umm size);
 //END STRINGS API
 
 //TYPE DECLARATIONS
+
 //MEMORY API
+void fmj_memory_copy(void* dst,void* src,umm size);
+
 struct FMJMemoryArena
 {
     void* base;
@@ -137,7 +146,7 @@ APIDEF FMJString fmj_string_strip_extension(FMJString file_name_or_path_with_ext
 APIDEF FMJString fmj_string_strip_and_output_extension(FMJString* file_name_or_path_with_extension,FMJString* ext,FMJMemoryArena *arena,bool keep_file_extension_delimeter);
 APIDEF FMJString fmj_string_pad_right(FMJString String,char PadChar,u32 PadAmount,FMJMemoryArena* Memory);
 APIDEF FMJString fmj_string_enforce_min_size(FMJString string,u32 min_size,FMJMemoryArena* arena);
-#define fmj_string_append_char_to_char(front,back,arena) fmj_string_append(fmj_string_create(front,arena),back,arena)
+#define fmj_string_append_char_to_char(front,back,arena) fmj_string_append(fmj_string_create(front,arena),fmj_string_create(back,arena),arena)
 #define fmj_string_append_char(front,back,arena) fmj_string_append(front,fmj_string_create(back,arena),arena)
 APIDEF FMJString fmj_string_append(FMJString front,FMJString back,FMJMemoryArena* arena);
 //End Strings API
@@ -168,7 +177,6 @@ void* fmj_fixed_buffer_get_any_(FMJFixedBuffer* buffer, u64 index);
 void fmj_fixed_buffer_clear(FMJFixedBuffer *buffer);
 void fmj_fixed_buffer_free(FMJFixedBuffer *buffer);
 void fmj_fixed_buffer_pop(FMJFixedBuffer* buffer);
-
     
 //Stretchy 
 struct FMJStretchBuffer
@@ -182,11 +190,11 @@ struct FMJStretchBuffer
 FMJStretchBuffer fmj_stretch_buffer_init(umm capacity,umm unit_size,u32 alignment);
 u64 fmj_stretch_buffer_push(FMJStretchBuffer* buffer, void* element);
 
-#define fmj_stretch_buffer_check_out(type,buffer,index) (type*)fmj_stretch_buffer_get_ptr_(buffer,index);
+#define fmj_stretch_buffer_check_out(type,buffer,index) (type*)fmj_stretch_buffer_checkout_ptr_(buffer,index);
 #define fmj_stretch_buffer_get(type,buffer,index) *(type*)fmj_stretch_buffer_get_(buffer,index);
-void* fmj_stretch_buffer_get_ptr_(FMJStretchBuffer* buffer,u64 index);
+void* fmj_stretch_buffer_checkout_ptr_(FMJStretchBuffer* buffer,u64 index);
 void fmj_stretch_buffer_check_in(FMJStretchBuffer* buffer);
-
+ 
 //WARNING(ray):You get no protection when using this function.
 void* fmj_stretch_buffer_get_(FMJStretchBuffer* buffer,u64 index);
 void fmj_fixed_buffer_clear_item(FMJFixedBuffer* b,u64 i);
@@ -248,25 +256,154 @@ FMJHashAddElementResult fmj_hashtable_add(FMJHashTable* h_table,void* key,u64 ke
 #define fmj_hashtable_get(type,table,in,size) (type*)fmj_hashtable_get_(table,in,size)
 void* fmj_hashtable_get_(FMJHashTable* h_table,void* key,u64 size);
 void fmj_hashtable_remove(FMJHashTable* h_table,void* key);
-bool fmj_hash_contains(FMJHashTable* h_table,void* key,uint64_t size);
-
+bool fmj_hashtable_contains(FMJHashTable* h_table,void* key,uint64_t size);
 //END HASHTABLE
 
 //BEGIN ANYTHING CACHE
-/*
-struct AnythingCache
+struct AnyCache
 {
-    YoyoHashTable hash;
-    memory_index key_size;
-    bool is_init = false;
-    //TODO(Ray):Give this more thought later.
-    YoyoVector anythings;//backing space for now
+    FMJHashTable hash;
+    umm key_size;
+    bool is_init;
+    FMJStretchBuffer anythings;
     bool is_using_free_list;
-    YoyoVector free_list;
-};
-*/
+    FMJStretchBuffer free_list;
+} typedef AnyCache;
+
+#define fmj_anycache_get(type,cache,key) *(type*)fmj_anycache_get_(cache,key)
+#define fmj_anycache_checkout(type,cache,key) (type*)fmj_anycache_get_(cache,key)
+//Returns the first free element null if it does not exist
+#define fmj_anycache_checkout_first_free(type,cache) (type*)fmj_anycache_checkout_first_free_(cache);
+#define fmj_anycache_checkout_first_free_with_predicate(type,cache,predicate) (type*)fmj_anycache_checkout_first_free_with_predicate_(&cache,predicate);
+
+AnyCache fmj_anycache_init(u32 max_hash_states,umm size_of_thing,umm size_of_key,bool is_using_free_list);
+bool fmj_anycache_exist(AnyCache* cache,void* key);
+//Returns key for later retrival
+bool fmj_anycache_add(AnyCache* cache,void* key,void* thing);
+bool fmj_anycache_add_to_free_list(AnyCache* cache,void* key,void* thing);
+void fmj_anycache_remove(AnyCache* cache,void* key);
+void fmj_anycache_remove_free_list(AnyCache* cache,void* key);
+void* fmj_anycache_get_(AnyCache* cache,void* key);
+void* fmj_anycache_checkout_(AnyCache* cache,void* key);
+void fmj_anycache_checkin_(AnyCache* cache,void* key);
+void fmj_anycache_reset(AnyCache* cache);
+void* fmj_anycache_checkout_first_free_(AnyCache* cache);
+void* fmj_anycache_checkout_first_free_with_predicate_(AnyCache* cache,bool (*predicate)(void*));
 //END ANYTHING CACHE
 
+//BEGIN FILE API
+struct FMJFileReadResult
+{
+	umm content_size;
+	void* content;
+}typedef FMJFileReadResult;
 
+struct FMJFileDirInfoResult
+{
+	FMJFixedBuffer files;
+}typedef FMJFileDirInfoResult;
+
+struct FMJFileInfo
+{
+	void* file;
+	FMJString name;
+	umm file_size;
+	u32 file_count;
+} typedef FMJFileInfo;
+
+struct FMJFileHandle
+{
+	FILE* file;
+} typedef FMJFileHandle;
+
+FMJFileDirInfoResult fmj_file_platform_get_all_files_in_dir(char* path, FMJMemoryArena* arena);
+FMJFileReadResult fmj_file_platform_read_entire_file(char* file_name);
+//END FILE API
+
+//BEGIN THREAD API
+struct FMJThreadSemaphore
+{
+    void* state;
+} typedef FMJThreadSemaphore;
+
+struct FMJThread
+{
+    u64 id;
+} typedef FMJThread;
+
+struct FMJTicketMutex
+{
+    s64 volatile ticket;
+    s64 volatile serving;
+} typedef FMJTicketMutex;
+
+//TODO(ray):decide later what we will do about inlining
+#define FMJ_ATOMICS_INLINE //__forceinline
+
+u64 fmj_thread_get_cpu_core_count();
+u64 fmj_thread_get_thread_id();
+FMJThread fmj_thread_create(void*(*func)(void*),void* func_data);
+FMJ_ATOMICS_INLINE s64 fmj_thread_atomic_compare_exchange64(s64 volatile *value,s64 new_value,s64 expected_value);
+FMJ_ATOMICS_INLINE s64 fmj_thread_atomic_increment64(s64 volatile *value);
+FMJ_ATOMICS_INLINE s64 fmj_thread_atomic_decrement64(s64 volatile *value);
+FMJ_ATOMICS_INLINE s64 fmj_thread_atomic_add64(s64 volatile *value,s64 amount);
+FMJ_ATOMICS_INLINE void fmj_thread_begin_ticket_mutex(FMJTicketMutex* mutex);
+FMJ_ATOMICS_INLINE void fmj_thread_end_ticket_mutex(FMJTicketMutex* mutex);
+FMJThreadSemaphore fmj_thread_create_semaphore(u64 value); 
+//END THREAD API
+
+//BEGIN MATH API
+
+union f32_2
+{
+    struct
+    {
+        f32 x;
+        f32 y;
+    };
+    struct
+    {
+        f32 r;
+        f32 b;
+    };
+    struct
+    {
+        f32 s;
+        f32 t;
+    };
+    struct
+    {
+        f32 u;
+        f32 v;
+    };
+    struct
+    {
+        f32 left;
+        f32 right;
+    };
+    struct
+    {
+        f32 width;
+        f32 height;
+    };
+    struct
+    {
+        f32 xy[2];  
+    };
+    
+} typedef f32_2;
+f32_2 float2(f32 a,f32 b);
+f32_2 float2_add(f32_2 a, f32_2 b);
+f32_2 float2_s_add(f32 a, f32_2 b);
+f32_2 float2_sub(f32_2 a, f32_2 b);
+f32_2 float2_s_sub(f32 a, f32_2 b); 
+f32_2 float2_sub_s(f32_2 a, f32 b);
+f32_2 float2_mul(f32_2 a, f32_2 b);
+f32_2 float2_s_mul(f32 a,f32_2 b);
+f32_2 float2_div(f32_2 a, f32_2 b);
+f32_2 float2_s_div(float a, f32_2 b);
+f32_2 float2_div_s(f32_2 a, float b);
+
+//END MATH API
 #define FMJ_TYPES_H
 #endif

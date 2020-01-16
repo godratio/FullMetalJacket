@@ -101,3 +101,9 @@ void fmj_arena_free(FMJMemoryArena* arena)
     fmj_os_deallocate(arena->base,arena->size);    
 }
 
+void fmj_memory_copy(void* dst,void* src,umm size)
+{
+    memcpy(dst,src,size);
+}
+
+

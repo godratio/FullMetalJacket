@@ -95,7 +95,6 @@ void fmj_fixed_buffer_pop(FMJFixedBuffer* buffer)
 
 FMJStretchBuffer fmj_stretch_buffer_init(umm capacity,umm unit_size,u32 alignment)
 {
-//    alignment = 4;
     ASSERT(unit_size >= alignment);
     ASSERT(unit_size > 0);
     FMJStretchBuffer result = {0};
@@ -160,7 +159,7 @@ u64 fmj_stretch_buffer_push(FMJStretchBuffer* buffer, void* element)
     return fmj_fixed_buffer_push(&buffer->fixed,element);
 }
 
-void* fmj_stretch_buffer_get_ptr_(FMJStretchBuffer* buffer,u64 index)
+void* fmj_stretch_buffer_checkout_ptr_(FMJStretchBuffer* buffer,u64 index)
 {
 	ASSERT(buffer);
     buffer->borrow_count++;

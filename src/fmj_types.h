@@ -354,7 +354,7 @@ FMJThreadSemaphore fmj_thread_create_semaphore(u64 value);
 
 //BEGIN MATH API
 
-union f32_2
+union f2
 {
     struct
     {
@@ -391,18 +391,19 @@ union f32_2
         f32 xy[2];  
     };
     
-} typedef f32_2;
-f32_2 float2(f32 a,f32 b);
-f32_2 float2_add(f32_2 a, f32_2 b);
-f32_2 float2_s_add(f32 a, f32_2 b);
-f32_2 float2_sub(f32_2 a, f32_2 b);
-f32_2 float2_s_sub(f32 a, f32_2 b); 
-f32_2 float2_sub_s(f32_2 a, f32 b);
-f32_2 float2_mul(f32_2 a, f32_2 b);
-f32_2 float2_s_mul(f32 a,f32_2 b);
-f32_2 float2_div(f32_2 a, f32_2 b);
-f32_2 float2_s_div(float a, f32_2 b);
-f32_2 float2_div_s(f32_2 a, float b);
+} typedef f2;
+
+f2 f2_create(f32 a,f32 b);
+f2 f2_add(f2 a,f2 b);
+f2 f2_s_add(f32 a,f2 b);
+f2 f2_sub(f2 a,f2 b);
+f2 f2_s_sub(f32 a,f2 b); 
+f2 f2_sub_s(f2 a,f32 b);
+f2 f2_mul(f2 a,f2 b);
+f2 f2_s_mul(f32 a,f2 b);
+f2 f2_div(f2 a,f2 b);
+f2 f2_s_div(f32 a,f2 b);
+f2 f2_div_s(f2 a,f32 b);
 
 //END MATH API
 #define FMJ_TYPES_H

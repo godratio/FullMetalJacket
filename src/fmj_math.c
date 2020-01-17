@@ -1,12 +1,21 @@
 
 #include "fmj_types.h"
 
-f32_2 float2(f32 a,f32 b)
+f2 f2_create(f32 a,f32 b)
 {
-    f32_2 result = {0};
+    f2 result = {0};
     result.x = a;
     result.y = b;
     return result;
 }
+
+f2 f2_add(f2 a,f2 b)
+{
+    f2 r = {0};
+    r.x = a.x + b.x;
+    r.y = a.y + b.y;
+    return r;
+}
+
 
 

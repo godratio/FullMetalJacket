@@ -255,7 +255,7 @@ int main()
     FMJThread thread = fmj_thread_create(test_run_thread,&thread_id);
 
     //Math testing
-    f32_2 a = float2(0,0.333456f);
+    f2 a = f2_create(0,0.333456f);
     printf("float2 values: x: %f  y: %f .\n",a.x,a.y);
     printf("float2 values: x: %f  y: %f .\n",a.xy[0],a.xy[1]);
     

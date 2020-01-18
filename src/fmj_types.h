@@ -1,7 +1,3 @@
-//NOTE(ray):We will not be pursuing this any further for now as its assumed any games
-//that I would make will use the preexisting math lib in C++.
-//I may however decide against that come back here and finisht this or use someone elses
-//C mathlib
 
 #if !defined(FMJ_TYPES_H)
 #include <stdio.h>
@@ -393,6 +389,73 @@ union f2
     
 } typedef f2;
 
+union f3
+{
+    struct
+    {
+        f32 x;
+        f32 y;
+        f32 z;
+    };
+    struct
+    {
+        f32 r;
+        f32 g;
+        f32 b;
+    };
+    struct
+    {
+        f32 xyz[3];  
+    };
+    struct
+    {
+        f32 rgb[3];  
+    };
+} typedef f3;
+
+union f4
+{
+    struct
+    {
+        f32 x;
+        f32 y;
+        f32 z;
+        f32 w;
+    };
+    struct
+    {
+        f32 r;
+        f32 g;
+        f32 b;
+        f32 a;
+    };
+    struct
+    {
+        f32 xyzw[4];  
+    };
+    struct
+    {
+        f32 rgba[4];  
+    };
+} typedef f4;
+
+typedef f4 quaternion;
+
+union f3x3
+{
+    f3 c0;
+    f3 c1;
+    f3 c2;
+}typedef f3x3;
+
+union f4x4
+{
+    f4 c0;
+    f4 c1;
+    f4 c2;
+    f4 c3;
+}typedef f4x4;
+
 f2 f2_create(f32 a,f32 b);
 f2 f2_add(f2 a,f2 b);
 f2 f2_s_add(f32 a,f2 b);
@@ -405,6 +468,66 @@ f2 f2_div(f2 a,f2 b);
 f2 f2_s_div(f32 a,f2 b);
 f2 f2_div_s(f2 a,f32 b);
 
+f3 f3_create(f32 a,f32 b,f32 c);
+f3 f3_add(f3 a,f3 b);
+f3 f3_s_add(f32 a,f3 b);
+f3 f3_sub(f3 a,f3 b);
+f3 f3_s_sub(f32 a,f3 b);
+f3 f3_sub_s(f3 a,f32 b);
+f3 f3_mul(f3 a,f3 b);
+f3 f3_s_mul(f32 a,f3 b);
+f3 f3_div(f3 a,f3 b);
+f3 f3_s_div(f32 a,f3 b);
+f3 f3_div_s(f3 a,f32 b);
+
+f4 f4_create(f32 a,f32 b,f32 c);
+f4 f4_add(f4 a,f4 b);
+f4 f4_s_add(f32 a,f4 b);
+f4 f4_sub(f4 a,f4 b);
+f4 f4_s_sub(f32 a,f4 b);
+f4 f4_sub_s(f4 a,f32 b);
+f4 f4_mul(f4 a,f4 b);
+f4 f4_s_mul(f32 a,f4 b);
+f4 f4_div(f4 a,f4 b);
+f4 f4_s_div(f32 a,f4 b);
+f4 f4_div_s(f4 a,f32 b);
+
+f3x3 f3x3_identity();
+f3x3 f3x3_create_zero();
+f3x3 f3x3_create_row(f32 a,f32 b,f32 c);
+f3x3 f3x3_create(f32 m00, f32 m01, f32 m02,
+                 f32 m10, f32 m11, f32 m12, 
+                 f32 m20, f32 m21, f32 m22);
+f3x3 f3x3_create_from_quaternion(quaternion a);
+f3x3 f3x3_transpose(f3x3 a);
+f3x3 f3x3_look_rotation(f3 forward, f3 up);
+
+f4x4 f4x4_identity();
+f4x4 f4x4_create_zero();
+f4x4 f4x4_create_row(f32 a,f32 b,f32 c,f32 d);
+f4x4 f4x4_create_row_f4(f4 a,f4 b,f4 c,f4 d);
+f4x4 f4x4_create(f32 m00, f32 m01, f32 m02, f32 m03,
+                 f32 m10, f32 m11, f32 m12, f32 m13, 
+                 f32 m20, f32 m21, f32 m22, f32 m23,
+                 f32 m30, f32 m31, f32 m32, f32 m33);
+f4x4 f4x4_create_from_rotation_translation(f3x3 rotation, f3 translation);
+
+f4x4 f4x4_mul(f4x4 a,f4x4 b);
+f4x4 f4x4_mul_s(f4x4 a,f32 s);
+f4x4 f4x4_s_mul(f32 s,f4x4 a);
+f4x4 f4x4_add(f4x4 a,f4x4 b);
+f4x4 f4x4_add_s(f4x4 a,f32 s);
+
+f4x4 f4x4_sub(f4x4 a,f4x4 b);
+f4x4 f4x4_sub_s(f4x4 a,f32 s);
+f4x4 f4x4_s_sub(f4x4 s,f32 a);
+
+f4x4 f4x4_div(f4x4 a,f4x4 b);
+f4x4 f4x4_div_s(f4x4 a,f32 s);
+f4x4 f4x4_s_div(f4x4 s,f32 a);
+
+f4x4 f4x4_transpose(f4x4 a);
+f4x4 f4x4_look_rotation(f3 forward, f3 up);
 //END MATH API
 #define FMJ_TYPES_H
 #endif

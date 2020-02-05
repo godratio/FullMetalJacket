@@ -413,7 +413,8 @@ union f3
     };
 } typedef f3;
 
-union f4
+union
+f4
 {
     struct
     {
@@ -480,7 +481,7 @@ f3 f3_div(f3 a,f3 b);
 f3 f3_s_div(f32 a,f3 b);
 f3 f3_div_s(f3 a,f32 b);
 
-f4 f4_create(f32 a,f32 b,f32 c);
+f4 f4_create(f32 a,f32 b,f32 c,f32 d);
 f4 f4_add(f4 a,f4 b);
 f4 f4_s_add(f32 a,f4 b);
 f4 f4_sub(f4 a,f4 b);
@@ -494,6 +495,7 @@ f4 f4_div_s(f4 a,f32 b);
 
 f3x3 f3x3_identity();
 f3x3 f3x3_create_zero();
+f3x3 f3x3_create_vector(f3 a,f3 b,f3 c);
 f3x3 f3x3_create_row(f32 a,f32 b,f32 c);
 f3x3 f3x3_create(f32 m00, f32 m01, f32 m02,
                  f32 m10, f32 m11, f32 m12, 
@@ -505,29 +507,181 @@ f3x3 f3x3_look_rotation(f3 forward, f3 up);
 f4x4 f4x4_identity();
 f4x4 f4x4_create_zero();
 f4x4 f4x4_create_row(f32 a,f32 b,f32 c,f32 d);
-f4x4 f4x4_create_row_f4(f4 a,f4 b,f4 c,f4 d);
+f4x4 f4x4_create_vector(f4 a,f4 b,f4 c,f4 d);
 f4x4 f4x4_create(f32 m00, f32 m01, f32 m02, f32 m03,
                  f32 m10, f32 m11, f32 m12, f32 m13, 
                  f32 m20, f32 m21, f32 m22, f32 m23,
                  f32 m30, f32 m31, f32 m32, f32 m33);
-f4x4 f4x4_create_from_rotation_translation(f3x3 rotation, f3 translation);
-
-f4x4 f4x4_mul(f4x4 a,f4x4 b);
-f4x4 f4x4_mul_s(f4x4 a,f32 s);
-f4x4 f4x4_s_mul(f32 s,f4x4 a);
-f4x4 f4x4_add(f4x4 a,f4x4 b);
-f4x4 f4x4_add_s(f4x4 a,f32 s);
-
-f4x4 f4x4_sub(f4x4 a,f4x4 b);
-f4x4 f4x4_sub_s(f4x4 a,f32 s);
-f4x4 f4x4_s_sub(f4x4 s,f32 a);
-
-f4x4 f4x4_div(f4x4 a,f4x4 b);
-f4x4 f4x4_div_s(f4x4 a,f32 s);
-f4x4 f4x4_s_div(f4x4 s,f32 a);
+f4x4 f4x4_create_from_f3x3rotation_translation(f3x3 rotation, f3 translation);
+f4x4 f4x4_create_from_quaternion_translation(quaternion rotation,f3 translation);
+f4x4 f4x4_create_with_scale(f32 x, f32 y, f32 z);
+f4x4 f4x4_create_with_translate(f3 a);
 
 f4x4 f4x4_transpose(f4x4 a);
-f4x4 f4x4_look_rotation(f3 forward, f3 up);
+f4x4 f4x4_mul(f4x4 a,f4x4 b);
+f4x4 f4x4_mul_f4(f4 a,f4x4 b);
+quaternion quaternion_create(f32 x, f32 y, f32 z, f32 w);
+quaternion quaternion_create_zero();
+quaternion quaternion_create_f32(f32 a);
+quaternion quaternion_create_f4(f4 a);
+quaternion quaternion_create_f3x3(f3x3 a);
+quaternion quaternion_create_f4x4(f4x4 a);
+quaternion quaternion_look_rotation(f3 forward, f3 up);
+quaternion quaternion_mul(quaternion a,quaternion b);
+quaternion quaternion_normalize(quaternion a);
+f32 quaternion_dot(quaternion a, quaternion b);
+f32 quaternion_length(quaternion q);
+f32 quaternion_length_sq(quaternion q);
+quaternion quaternion_conjugate(quaternion q);
+quaternion quaternion_nlerp(quaternion q1, quaternion q2, f32 t);
+quaternion quaternion_inverse(quaternion q);
+quaternion quaternion_slerp(quaternion q1, quaternion q2, f32 t);
+
+f4x4 look_at(f3 eye,f3 target,f3 up);
+
+f3 f3_rotate_by_quaterion(quaternion q, f3 dir);
+f3 f3_rotate_by_f4x4(f4x4 a,f3 dir);
+quaternion f3_axis_angle(f3 axis, f32 angle);
+f3 f4x4_transform(f4x4 a, f3 b);
+
+f32 safe_ratio_zero(f32 a,f32 b);
+
+f3 cross(f3 a, f3 b);
+
+f32 f2_sum(f2 v);
+f32 f3_sum(f3 v);
+f32 f4_sum(f4 v);
+
+f32 f2_dot(f2 a, f2 b);
+f32 f3_dot(f3 a, f3 b);
+f32 f4_dot(f4 a, f4 b);
+
+f32 f2_length(f2 v);
+f32 f3_length(f3 v);
+f32 f4_length(f4 v);
+
+f2 f2_normalize(f2 v);
+f3 f3_normalize(f3 v);
+f4 f4_normalize(f4 v);
+
+f32 clamp(f32 x,f32 a,f32 b);
+
+f32 f2_length_sq(f2 v);
+f32 f3_length_sq(f3 v);
+f32 f4_length_sq(f4 v);
+
+f32 lerp(f32 a,f32 b,f32 t);
+f2 f2_lerp(f2 a, f2 b,f2 t);
+f3 f3_lerp(f3 a, f3 b,f3 t);
+f4 f4_lerp(f4 a, f4 b,f4 t);
+
+f32 f2_distance(f2 a, f2 b);
+f32 f3_distance(f3 a, f3 b);
+
+f2 f2_sin(f2 x);
+f3 f3_sin(f3 x);
+f4 f4_sin(f4 x);
+
+f2  f2_cos(f2 x);
+f3  f3_cos(f3 x);
+f4  f4_cos(f4 x);
+
+void  f2_sincos(f2 x,f2* s,f2* c);
+void  f3_sincos(f3 x,f3* s,f3* c);
+void  f4_sincos(f4 x,f4* s,f4* c);
+
+f32 sqroot(f32 a);;
+f2  f2_sqroot(f2 a);
+f3  f3_sqroot(f3 a);
+f4  f4sqroot(f4 a);
+
+f32 rsqrt(f32 a);
+f2  f2_rsqrt(f2 a);
+f3  f3_rsqrt(f3 a);
+f4  f4_rsqrt(f4 a);
+
+f2  f2_abs(f2 x);
+f3  f3_abs(f3 x);
+f4  f4_abs(f4 x);
+
+f32 unlerp(f32  a, f32  b, f32  x);
+f2  f2_unlerp(f2 a, f2 b, f2 x);
+f3  f3_unlerp(f3 a, f3 b, f3 x);
+f4  f4_unlerp(f4 a, f4 b, f4 x);
+
+f32 remap(f32  a, f32  b, f32  c, f32  d, f32  x);
+f2  f2_remap(f2 a, f2 b, f2 c, f2 d, f2 x);
+f3  f3_remap(f3 a, f3 b, f3 c, f3 d, f3 x);
+f4  f4_remap(f4 a, f4 b, f4 c, f4 d, f4 x);
+
+f32 mad(f32  a, f32  b, f32  c);
+f2  f2_mad(f2 a, f2 b, f2 c);
+f3  f3_mad(f3 a, f3 b, f3 c);
+f4  f4_mad(f4 a, f4 b, f4 c);
+
+f32 tangent(f32  x);
+f2  f2_tangent(f2 x);
+f3  f3_tangent(f3 x);
+f4  f4_tangent(f4 x);
+
+f2  f2_atan(f2 x);
+f3  f3_atan(f3 x);
+f4  f4_atan(f4 x);
+
+f2  f2_atan2(f2 y, f2 x);
+f3  f3_atan2(f3 y, f3 x);
+f4  f4_atan2(f4 y, f4 x);
+
+f2  f2_acos(f2 x);
+f3  f3_acos(f3 x);
+f4  f4_acos(f4 x);
+
+f2  f2_floor(f2 x);
+f3  f3_floor(f3 x);
+f4  f4_floor(f4 x);
+
+f2  f2_ceil(f2 x);
+f3  f3_ceil(f3 x);
+f4  f4_ceil(f4 x);
+
+f2  f2_round(f2 x);
+f3  f3_round(f3 x);
+f4  f4_round(f4 x);
+
+f2  f2_trunc(f2 x);
+f3  f3_trunc(f3 x);
+f4  f4_trunc(f4 x);
+
+f2  f2_pow(f2 x, f2 y);
+f3  f3_pow(f3 x, f3 y);
+f4  f4_pow(f4 x, f4 y);
+
+f2  f2_exp(f2 x);
+f3  f3_exp(f3 x);
+f4  f4_exp(f4 x);
+
+f2  f2_exp2(f2 x);
+f3  f3_exp2(f3 x);
+f4  f4_exp2(f4 x);
+
+f2  f2_fmod(f2 x, f2 y);
+f3  f3_fmod(f3 x, f3 y);
+f4  f4_fmod(f4 x, f4 y);
+
+f2  f2_reflect(f2 i, f2 n);
+f3  f3_reflect(f3 i, f3 n);
+f4  f4_reflect(f4 i, f4 n);
+
+f32 radians(f32 x);
+f2  f2_radians(f2 x);
+f3  f3_radians(f3 x);
+f4  f4_radians(f4 x);
+
+f32 degrees(f32 x);
+f2  f2_degrees(f2 x);
+f3  f3_degrees(f3 x);
+f4  f4_degrees(f4 x);
+
 //END MATH API
 #define FMJ_TYPES_H
 #endif

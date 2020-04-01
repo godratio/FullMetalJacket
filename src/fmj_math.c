@@ -180,6 +180,16 @@ f4 f4_create(f32 a,f32 b,f32 c,f32 d)
     return r;
 }
 
+f4 f4_create_f(f32 a)
+{
+    f4 r = {0};
+    r.x = a;
+    r.y = a;
+    r.z = a;
+    r.w = a;
+    return r;    
+}
+
 f4 f4_add(f4 a,f4 b)
 {
     f4 r = {0};
@@ -313,6 +323,16 @@ f32 f4_dot(f4 a, f4 b)
     return f4_sum(f4_mul(a,b));
 }
 
+f32 sqroot(float a) { return 1.0f / sqrt(a); }
+f2  f2_sqroot(f2 a) { return f2_create(sqrt(a.x),sqrt(a.y)); }
+f3  f3_sqroot(f3 a) { return f3_create(sqrt(a.x),sqrt(a.y),sqrt(a.z)); }
+f4  f4_sqroot(f4 a) { return f4_create(sqrt(a.x),sqrt(a.y),sqrt(a.z),sqrt(a.w));}
+
+f32 rsqrt(float a)  { return 1.0f / sqrt(a); }
+f2  f2_rsqrt(f2 a) { return f2_s_div(1.0f,f2_sqroot(a));}
+f3  f3_rsqrt(f3 a) { return f3_s_div(1.0f,f3_sqroot(a));}
+f4  f4_rsqrt(f4 a) { return f4_s_div(1.0f,f4_sqroot(a));}
+
 f2 f2_normalize(f2 a){return f2_mul_s(a,(safe_ratio_zero(1.0f , f2_length(a))));}
 f3 f3_normalize(f3 a){return f3_mul_s(a,(safe_ratio_zero(1.0f , f3_length(a))));}
 f4 f4_normalize(f4 a){return f4_mul_s(a,(safe_ratio_zero(1.0f , f4_length(a))));}
@@ -364,16 +384,13 @@ f2  f2_tan(f2 x) { return f2_create(tanf(x.x), tanf(x.y)); }
 f3  f3_tan(f3 x) { return f3_create(tanf(x.x), tanf(x.y), tanf(x.z)); }
 f4  f4_tan(f4 x) { return f4_create(tanf(x.x), tanf(x.y), tanf(x.z), tanf(x.w)); }
 
-
 f2  f2_atan(f2 x) { return f2_create(atanf(x.x), atanf(x.y)); }
 f3  f3_atan(f3 x) { return f3_create(atanf(x.x), atanf(x.y), atanf(x.z)); }
 f4  f4_atan(f4 x) { return f4_create(atanf(x.x), atanf(x.y), atanf(x.z), atanf(x.w)); }
 
-
 f2  f2_atan2(f2 y, f2 x) { return f2_create(atan2f(y.x, x.x), atan2f(y.y, x.y)); }
 f3  f3_atan2(f3 y, f3 x) { return f3_create(atan2f(y.x, x.x), atan2f(y.y, x.y), atan2f(y.z, x.z)); }
 f4  f4_atan2(f4 y, f4 x) { return f4_create(atan2f(y.x, x.x), atan2f(y.y, x.y), atan2f(y.z, x.z), atan2f(y.w, x.w)); }
-
 
 f2  f2_cosh(f2 x) { return f2_create(coshf(x.x), coshf(x.y)); }
 f3  f3_cosh(f3 x) { return f3_create(coshf(x.x), coshf(x.y), coshf(x.z)); }
@@ -447,6 +464,8 @@ f32  degrees(f32 x) { return x * 57.295779513f; }
 f2  f2_degrees(f2 x) { return f2_mul_s(x,57.295779513f); }
 f3  f3_degrees(f3 x) { return f3_mul_s(x,57.295779513f); }
 f4  f4_degrees(f4 x) { return f4_mul_s(x,57.295779513f); }
+
+f4 f4_negate(f4 x){return f4_create(-x.x,-x.y,-x.z,-x.w);}
 
 f3x3 f3x3_identity()
 {
@@ -650,13 +669,240 @@ f4x4 f4x4_mul(f4x4 a,f4x4 b)
 		f4_add(f4_add(f4_add(f4_mul_s(a.c0,b.c3.x),f4_mul_s(a.c1,b.c3.y)),f4_mul_s(a.c2,b.c3.z)),f4_mul_s(a.c3,b.c3.w)));
 }
 
-#if 0
-
-//f4 f4x4_mul_f4(f4 a,f4x4 b);
 f4 f4x4_mul_f4(f4x4 a,f4 b)
 {
-	return a.c0 * b.x() + a.c1 * b.y() + a.c2 * b.z() + a.c3 * b.w();
+	return f4_add(f4_add(f4_add(f4_mul_s(a.c0,b.x),f4_mul_s(a.c1,b.y)),f4_mul_s(a.c2,b.z)),f4_mul_s(a.c3,b.w));
 }
+
+quaternion quaternion_create(f32 x, f32 y, f32 z, f32 w)
+{
+    quaternion result = {0};
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    result.w = w;
+    return result;
+}
+
+quaternion quaternion_create_f4(f4 a)
+{
+    quaternion result = {0};
+    result.x = a.x;
+    result.y = a.y;
+    result.z = a.z;
+    result.w = a.w;
+    return result;    
+}
+
+quaternion quaternion_create_zero()
+{
+    quaternion result = {0};
+    return result;
+}
+
+quaternion quaternion_normalize(quaternion a)
+{
+	float root = sqrt(a.x * a.x + a.y * a.y + a.z * a.z + a.w * a.w);
+	a = quaternion_create_f4(f4_div_s(a,root));
+	return a;
+}
+
+quaternion quaternion_create_f3x3(f3x3 m)
+{
+    quaternion result = {0};
+    f3 u = m.c0;
+    f3 v = m.c1;
+    f3 w = m.c2;
+    if (u.x >= 0.0f)
+    {
+        f32 t = v.y + w.z;
+        if (t >= 0.0f)
+        {
+            result.x = 1.0f + u.x + t;
+            result.y = u.y - v.x;
+            result.z = w.x - u.z;
+            result.w = v.z - w.y;
+        }
+        else
+        {
+            result.x = v.z - w.y;
+            result.y = w.x + u.z;
+            result.z = u.y + v.x;
+            result.w = 1.0f + u.x - t;
+        }
+    }
+    else
+    {
+        f32 t = v.y - w.z;
+        if (t >= 0.0f)
+        {
+            result.x = w.x - u.z;
+            result.y = v.z + w.y;
+            result.z = 1.0f - u.x + t;
+            result.w = u.y + v.x;
+        }
+        else
+        {
+            result.x = u.y - v.x;
+            result.y = 1.0f - u.x - t;
+            result.z = v.z + w.y;
+            result.w = w.x + u.z;
+        }
+    }
+    f4 q = f4_normalize(f4_create(result.x,result.y,result.z,result.w));
+    result.x = q.w;
+    result.y = q.z;
+    result.z = q.y;
+    result.w = q.x;
+    return result;
+}
+
+quaternion quaternion_create_f4x4(f4x4 a)
+{
+    f3x3 in_mat = {0};
+    in_mat.c0 = f3_create(a.c0.x,a.c0.y,a.c0.z);
+    in_mat.c1 = f3_create(a.c1.x,a.c1.y,a.c1.z);
+    in_mat.c2 = f3_create(a.c2.x,a.c2.y,a.c2.z);
+    return quaternion_create_f3x3(in_mat);
+}
+
+quaternion quaternion_look_rotation(f3 forward, f3 up)
+{
+    f3 dir = f3_normalize(forward);
+    f3 rightdir = cross(up, dir);
+    f3 updir = cross(dir, rightdir);
+
+	f32 m00 = rightdir.x;
+	f32 m01 = updir.x;
+	f32 m02 = dir.x;
+
+	f32 m10 = rightdir.y;
+	f32 m11 = updir.y;
+	f32 m12 = dir.y;
+
+	f32 m20 = rightdir.z;
+	f32 m21 = updir.z;
+	f32 m22 = dir.z;
+
+    f32 num8 = (m00 + m11) + m22;
+    f4 q = {0};
+    if (num8 > 0.0)
+    {
+        f32 num = sqrt(num8 + 1.0f);
+        q.w = (num * 0.5f);
+        num = 0.5f / num;
+        q.x = ((m12 - m21) * num);
+        q.y = ((m20 - m02) * num);
+        q.z = ((m01 - m10) * num);
+        return f4_normalize((q));
+    }
+
+    if ((m00 >= m11) && (m00 >= m22))
+    {
+        f32 num7 = sqrt(((1.0f + m00) - m11) - m22);
+        f32 num4 = 0.5f / num7;
+        q.x = (0.5f * num7);
+        q.y = ((m01 + m10) * num4);
+        q.z = ((m02 + m20) * num4);
+        q.w = ((m12 - m21) * num4);
+        return f4_normalize((q));
+    }
+    
+    if (m11 > m22)
+    {
+        f32 num6 = sqrt(((1.0f + m11) - m00) - m22);
+        f32 num3 = 0.5f / num6;
+        q.x = ((m10 + m01) * num3);
+        q.y = (0.5f * num6);
+        q.z = ((m21 + m12) * num3);
+        q.w = ((m20 - m02) * num3);
+        return f4_normalize((q));
+    }
+    
+    f32 num5 = sqrt(((1.0f + m22) - m00) - m11);
+    f32 num2 = 0.5f / num5;
+    q.x = ((m20 + m02) * num2);
+    q.y = ((m21 + m12) * num2);
+    q.z = (0.5f * num5);
+    q.w = ((m01 - m10) * num2);
+    return f4_normalize((q));
+}
+
+quaternion quaternion_mul(quaternion q1, quaternion q2)
+{
+	
+	return quaternion_create(
+		q1.x * q2.w + q1.y * q2.z - q1.z * q2.y + q1.w * q2.x,
+		-q1.x * q2.z + q1.y * q2.w + q1.z * q2.x + q1.w * q2.y,
+		q1.x * q2.y - q1.y * q2.x + q1.z * q2.w + q1.w * q2.z,
+		-q1.x * q2.x - q1.y * q2.y - q1.z * q2.z + q1.w * q2.w
+	);
+}
+
+f32 quaternion_dot(quaternion a, quaternion b)
+{
+    return f4_dot(f4_create(a.x,a.y,a.z,a.w),
+        f4_create(b.x,b.y,b.z,b.w));
+}
+
+f32 quaternion_length(quaternion a)
+{
+    return sqrt(f4_dot(f4_create(a.x,a.y,a.z,a.w),
+                       f4_create(a.x,a.y,a.z,a.w)
+                       )
+                );
+}
+
+f32 quaternion_length_sq(quaternion q){return f4_dot(f4_create(q.x,q.y,q.z,q.w), f4_create(q.x,q.y,q.z,q.w));}    
+quaternion quaternion_conjugate(quaternion q)
+{
+    f4 result = f4_mul(f4_create(q.x,q.y,q.z,q.w),f4_create(-1.0f, -1.0f, -1.0f, 1.0f));
+    return quaternion_create(result.x,result.y,result.z,result.w);
+}
+
+quaternion nlerp(quaternion q1,quaternion q2,float t)
+{
+    float dt = f4_dot(q1, q2);
+    if(dt < 0.0f)
+    {
+        q2 = quaternion_create_f4(f4_negate(q2));
+    }
+
+    quaternion ql = f4_lerp(q1, q2, f4_create_f(t));
+    quaternion qn = quaternion_normalize(ql);                            
+    return qn;
+}
+
+quaternion inverse(quaternion q)
+{
+    return quaternion_conjugate(quaternion_normalize(q));
+}
+
+quaternion slerp(quaternion q1, quaternion q2, float t)
+{
+    float dt = f4_dot(q1, q2);
+    if (dt < 0.0f)
+    {
+        dt = -dt;
+        q2 = quaternion_create_f4(f4_negate(q2));
+    }
+
+    if (dt < 0.9995f)
+    {
+        float angle = acos(dt);
+        float s = rsqrt(1.0f - dt * dt);    // 1.0f / sin(angle)
+        float w1 = sin(angle * (1.0f - t)) * s;
+        float w2 = sin(angle * t) * s;
+        return quaternion_create_f4(f4_add(f4_mul_s(q1,w1),f4_mul_s(q2,w2)));
+    }
+    else
+    {
+        // if the angle is small, use linear interpolation
+        return nlerp(q1, q2, t);
+    }
+}
+
+#if 0
 
 #endif
 

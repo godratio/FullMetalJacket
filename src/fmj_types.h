@@ -482,6 +482,7 @@ f3 f3_s_div(f32 a,f3 b);
 f3 f3_div_s(f3 a,f32 b);
 
 f4 f4_create(f32 a,f32 b,f32 c,f32 d);
+f4 f4_create_f(f32 a);
 f4 f4_add(f4 a,f4 b);
 f4 f4_s_add(f32 a,f4 b);
 f4 f4_sub(f4 a,f4 b);
@@ -519,13 +520,13 @@ f4x4 f4x4_create_with_translate(f3 a);
 
 f4x4 f4x4_transpose(f4x4 a);
 f4x4 f4x4_mul(f4x4 a,f4x4 b);
-f4x4 f4x4_mul_f4(f4 a,f4x4 b);
+f4 f4x4_mul_f4(f4x4 b,f4 a);
+
 quaternion quaternion_create(f32 x, f32 y, f32 z, f32 w);
 quaternion quaternion_create_zero();
-quaternion quaternion_create_f32(f32 a);
-quaternion quaternion_create_f4(f4 a);
 quaternion quaternion_create_f3x3(f3x3 a);
 quaternion quaternion_create_f4x4(f4x4 a);
+quaternion quaternion_create_f4(f4 a);
 quaternion quaternion_look_rotation(f3 forward, f3 up);
 quaternion quaternion_mul(quaternion a,quaternion b);
 quaternion quaternion_normalize(quaternion a);
@@ -593,7 +594,7 @@ void  f4_sincos(f4 x,f4* s,f4* c);
 f32 sqroot(f32 a);;
 f2  f2_sqroot(f2 a);
 f3  f3_sqroot(f3 a);
-f4  f4sqroot(f4 a);
+f4  f4_sqroot(f4 a);
 
 f32 rsqrt(f32 a);
 f2  f2_rsqrt(f2 a);
@@ -681,6 +682,10 @@ f32 degrees(f32 x);
 f2  f2_degrees(f2 x);
 f3  f3_degrees(f3 x);
 f4  f4_degrees(f4 x);
+
+f4 f4_negate(f4 x);
+
+
 
 //END MATH API
 #define FMJ_TYPES_H

@@ -78,7 +78,10 @@ void* fmj_fixed_buffer_get_(FMJFixedBuffer* buffer, u64 index)
 void* fmj_fixed_buffer_get_any_(FMJFixedBuffer* buffer, u64 index)
 {
 	ASSERT(buffer);
-	if (index < 0 || index > buffer->count - 1 || buffer->capacity == 0)return 0;
+	ASSERT(buffer->start_at == -1);//You must have forget to reset the buffer or are trying to resize during iteration.    
+//	if (index < 0 || index > buffer->count - 1 || buffer->capacity == 0)return 0;
+    buffer->total_size += buffer->unit_size;
+    buffer->count++;
 	return  (uint8_t*)buffer->base + (index * buffer->unit_size);
 }
 
@@ -170,6 +173,12 @@ void* fmj_stretch_buffer_get_(FMJStretchBuffer* buffer,u64 index)
 {
 	ASSERT(buffer);
     return fmj_fixed_buffer_get_(&buffer->fixed,index);
+}
+
+void* fmj_stretch_buffer_get_any_(FMJStretchBuffer* buffer,u64 index)
+{
+	ASSERT(buffer);
+    return fmj_fixed_buffer_get_any_(&buffer->fixed,index);
 }
 
 void fmj_stretch_buffer_check_in(FMJStretchBuffer* buffer)

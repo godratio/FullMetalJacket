@@ -163,17 +163,20 @@ struct FMJFixedBuffer
 
 #define fmj_fixed_buffer_get_ptr(type,buffer,index) (type*)fmj_fixed_buffer_get_(buffer,index);
 #define fmj_fixed_buffer_get(type,buffer,index) *(type*)fmj_fixed_buffer_get_(buffer,index);
+
 #define fmj_fixed_buffer_get_any(type,buffer,index) (type*)fmj_fixed_buffer_get_any_(buffer,index);
 FMJFixedBuffer fmj_fixed_buffer_init(umm capacity,umm unit_size,u32 alignment);
 u64 fmj_fixed_buffer_push(FMJFixedBuffer* buffer, void* element);
 void* fmj_fixed_buffer_get_(FMJFixedBuffer* buffer, u64 index);
+
 //NOTE(ray):main difference is that any can access any where inside the buffer
 //regardless of push count but based on capacity.
 void* fmj_fixed_buffer_get_any_(FMJFixedBuffer* buffer, u64 index);
 void fmj_fixed_buffer_clear(FMJFixedBuffer *buffer);
 void fmj_fixed_buffer_free(FMJFixedBuffer *buffer);
 void fmj_fixed_buffer_pop(FMJFixedBuffer* buffer);
-    
+
+
 //Stretchy 
 struct FMJStretchBuffer
 {
@@ -188,6 +191,7 @@ u64 fmj_stretch_buffer_push(FMJStretchBuffer* buffer, void* element);
 
 #define fmj_stretch_buffer_check_out(type,buffer,index) (type*)fmj_stretch_buffer_checkout_ptr_(buffer,index);
 #define fmj_stretch_buffer_get(type,buffer,index) *(type*)fmj_stretch_buffer_get_(buffer,index);
+void* fmj_stretch_buffer_get_any_(FMJStretchBuffer* buffer,u64 index);
 void* fmj_stretch_buffer_checkout_ptr_(FMJStretchBuffer* buffer,u64 index);
 void fmj_stretch_buffer_check_in(FMJStretchBuffer* buffer);
  

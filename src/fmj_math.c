@@ -1,4 +1,3 @@
-
 #include "fmj_types.h"
 
 f2 f2_create(f32 a,f32 b)

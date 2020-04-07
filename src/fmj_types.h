@@ -102,6 +102,7 @@ void fmj_arena_clear_size(FMJMemoryArena *arena,umm size);
 umm fmj_arena_get_alignment_offset(FMJMemoryArena *arena,umm alignment);
     
 void* fmj_arena_get_pointer(FMJMemoryArena arena);
+FMJMemoryArenaPushParams fmj_arena_push_params_default();
 FMJMemoryArenaPushParams fmj_arena_push_params_no_clear();
 FMJMemoryArena fmj_arena_init(umm size, void* base);
 FMJMemoryArena fmj_arena_allocate(umm size);
@@ -446,14 +447,14 @@ f4
 
 typedef f4 quaternion;
 
-union f3x3
+struct f3x3
 {
     f3 c0;
     f3 c1;
     f3 c2;
 }typedef f3x3;
 
-union f4x4
+struct f4x4
 {
     f4 c0;
     f4 c1;
@@ -521,11 +522,13 @@ f4x4 f4x4_create_from_f3x3rotation_translation(f3x3 rotation, f3 translation);
 f4x4 f4x4_create_from_quaternion_translation(quaternion rotation,f3 translation);
 f4x4 f4x4_create_with_scale(f32 x, f32 y, f32 z);
 f4x4 f4x4_create_with_translate(f3 a);
-
+f4x4 f4x4_create_from_trs(f3 t,quaternion r,f3 s);
+    
 f4x4 f4x4_transpose(f4x4 a);
 f4x4 f4x4_mul(f4x4 a,f4x4 b);
 f4 f4x4_mul_f4(f4x4 b,f4 a);
-
+f4 f4_mul_f4x4(f4 a,f4x4 b);
+    
 quaternion quaternion_create(f32 x, f32 y, f32 z, f32 w);
 quaternion quaternion_create_zero();
 quaternion quaternion_create_f3x3(f3x3 a);
@@ -689,8 +692,68 @@ f4  f4_degrees(f4 x);
 
 f4 f4_negate(f4 x);
 
-
-
+//f4x4 init_pers_proj_matrix(f2 buffer_dim, f32 fov_y = 68.0f, float2 far_near = f2_create(0.5f, 1000.0f));
+//f4x4 init_ortho_proj_matrix(f2 size, f32 near_clip_plane = 0.1f, float far_clip_plane = 1000.0f);
+f4x4 init_pers_proj_matrix(f2 buffer_dim, f32 fov_y, f2 far_near);
+f4x4 init_ortho_proj_matrix(f2 size, f32 near_clip_plane, float far_clip_plane);
+f4x4 set_camera_view(f3 p,f3 forward_dir,f3 up_dir);
 //END MATH API
+
+//BEGIN 3D Tranform api
+
+//NOTE(Ray):If these become a perf bottle neck look to seperate these out.
+struct FMJ3DTrans
+{
+//world trans    
+	f3 p;
+	quaternion r;
+	f3 s;
+//local trans
+	f3 local_p;    
+	quaternion local_r;
+	f3 local_s;
+//matrix
+	f4x4 m;
+//local axis
+	f3 forward;
+	f3 up;
+	f3 right;
+}typedef FMJ3DTrans;
+
+void fmj_3dtrans_matrix_set(FMJ3DTrans* ot);
+f3 fmj_3dtrans_world_to_local_pos(FMJ3DTrans* ot,f3 a);
+f3 fmj_3dtrans_local_to_world_pos(FMJ3DTrans* ot,f3 a);
+void fmj_3dtrans_update(FMJ3DTrans* ot);
+void fmj_3dtrans_init(FMJ3DTrans* ot);
+f4x4 fmj_3dtrans_set_cam_view(FMJ3DTrans* ot);
+f3 fmj_3dtrans_transform_dir(f4x4 a,f3 b);
+f3 fmj_3dtrans_transform_p(f4x4 a,f3 b);
+
+//END 3D Transform API
+
+//Begin Sprite API
+#define SIZE_OF_SPRITE_VERT_IN_BYTES ((sizeof(f32) * 3) + (4 * sizeof(f32)) + (2 * sizeof(f32)))//one p v3 + one color v4 + one uv v2 = one vert data
+#define SIZE_OF_SPRITE_IN_BYTES (SIZE_OF_SPRITE_VERT_IN_BYTES * 6)
+
+
+struct FMJSpriteBatch
+{
+    FMJMemoryArena arena;    
+}typedef FMJSpriteBatch;
+
+struct FMJSprite
+{
+    f2 uv;
+    f4 color;
+    bool is_visible;    
+}typedef FMJSprite;
+
+void fmj_sprite_add_verts_(f32* v,f3 p[],f4 colors[],f2 uv[]);
+void fmj_sprite_add_rect(FMJMemoryArena* arena,f3 p[],f4 colors[],f2 uv[]);
+
+//End Sprite API
+
+
+
 #define FMJ_TYPES_H
 #endif

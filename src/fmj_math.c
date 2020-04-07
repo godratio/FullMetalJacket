@@ -673,6 +673,130 @@ f4 f4x4_mul_f4(f4x4 a,f4 b)
 	return f4_add(f4_add(f4_add(f4_mul_s(a.c0,b.x),f4_mul_s(a.c1,b.y)),f4_mul_s(a.c2,b.z)),f4_mul_s(a.c3,b.w));
 }
 
+f4 f4_mul_f4x4(f4 a,f4x4 b)
+{
+	return f4_create(
+		a.x * b.c0.x + a.y * b.c0.y + a.z * b.c0.z + a.w * b.c0.w,
+		a.x * b.c1.x + a.y * b.c1.y + a.z * b.c1.z + a.w * b.c1.w,
+		a.x * b.c2.x + a.y * b.c2.y + a.z * b.c2.z + a.w * b.c2.w,
+		a.x * b.c3.x + a.y * b.c3.y + a.z * b.c3.z + a.w * b.c3.w);
+}
+
+f4x4 f4x4_create_from_trs(f3 t,quaternion r,f3 s)
+{
+	f4x4 rotation = f4x4_create_from_quaternion_translation(r,t);
+	f4x4 scale_matrix = f4x4_create_with_scale(s.x,s.y,s.z);
+	return f4x4_mul(rotation,scale_matrix);
+}
+
+f4 f4_horizontal_add(f4 a,f4 b)
+{
+	f32 x = a.x + a.y;
+	f32 y = a.z + a.w;
+	f32 z = b.x + b.y;
+	f32 w = b.z + b.w;
+	return f4_create(x, y, z, w);
+}
+
+f4 f4_mat2mul(f4 a,f4 b)
+{
+    f4 t = f4_create(b.x,b.w,b.x,b.w);
+    f4 t2 = f4_create(a.y,a.x,a.w,a.z);
+    f4 t3 = f4_create(b.y,b.x,b.y,b.x);
+    f4 aa = f4_mul(a,t);
+    f4 bb = f4_mul(t2,t3);//a.yxwz() * b.yxyx();
+    return f4_add(aa,bb);
+}
+
+f4 f4_mat2adjmul(f4 a,f4 b)
+{
+    f4 t1 = f4_create(a.w,a.w,a.x,a.x);
+    f4 t2 = f4_create(a.y,a.y,a.z,a.z);
+    f4 t3 = f4_create(b.z,b.w,b.x,b.y);
+    f4 aa = f4_mul(t1,b);//a.wwxx() * b;
+    f4 bb = f4_mul(t2,t3);//a.yyzz() * b.zwxy();
+    return f4_sub(aa,bb);
+}
+
+f4 f4_mat2muladj(f4 a,f4 b)
+{
+    f4 t1 = f4_create(b.w,b.x,b.w,b.x);
+    f4 t2 = f4_create(a.y,a.x,a.w,a.z);
+    f4 t3 = f4_create(b.z,b.y,b.z,b.y);
+    f4 aa = f4_mul(a,t1);//b.wxwx();
+    f4 bb = f4_mul(t2,t3);//a.yxwz() * b.zyzy();
+    return f4_sub(aa,bb);
+}
+
+// Inverse function is the same no matter column major or row major
+// this version treats it as row major
+f4x4 f4x4_inverse(f4x4 a)
+{
+    // use block matrix method
+    // A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
+    // sub matrices
+
+	f4 A = f4_create(a.c1.z,a.c1.w,a.c0.z,a.c0.w);//lhps(a.c0.m, a.c1.m);
+ 	f4 B = f4_create(a.c1.x,a.c1.y,a.c0.x,a.c0.y);// hlps(a.c0.m, a.c1.m);
+ 	
+ 	f4 C = f4_create(a.c3.z,a.c3.w, a.c2.z,a.c2.w);// lhps(a.c2.m, a.c3.m);
+	f4 D = f4_create(a.c3.x,a.c3.y, a.c2.x,a.c2.y) ;// VecShuffle_2323(a.c2.m, a.c3.m);
+
+
+	f4 detA = f4_create_f(a.c0.x * a.c1.y - a.c0.y * a.c1.x);
+	f4 detB = f4_create_f(a.c0.z * a.c1.w - a.c0.w * a.c1.z);
+	f4 detC = f4_create_f(a.c2.x * a.c3.y - a.c2.y * a.c3.x);
+	f4 detD = f4_create_f(a.c2.z * a.c3.w - a.c2.w * a.c3.z);
+
+	f4x4 r;
+	f4 D_C = f4_mat2adjmul(D, C);
+	// A#B
+	f4 A_B = f4_mat2adjmul(A, B);
+	// X# = |D|A - B(D#C)
+    f4 X_ = f4_sub(f4_mul(detD,A),f4_mat2mul(B, D_C));
+	// W# = |A|D - C(A#B)
+	f4 W_ = f4_sub(f4_mul(detA,D),f4_mat2mul(C, A_B));
+
+	// |M| = |A|*|D| + ... (continue later)
+	f4 detM = f4_mul(detA,detD);
+
+	// Y# = |B|C - D(A#B)#
+	f4 Y_ = f4_sub(f4_mul(detB,C),f4_mat2muladj(D,A_B));
+	// Z# = |C|B - A(D#C)#
+	f4 Z_ = f4_sub(f4_mul(detC,B),f4_mat2muladj(A, D_C));
+
+	// |M| = |A|*|D| + |B|*|C| ... (continue later)
+	detM = f4_add(detM,f4_mul(detB,detC));
+
+	// tr((A#B)(D#C))
+    f4 dc_xzyw = f4_create(D_C.x,D_C.z,D_C.y,D_C.w);//D_C.xzyw()
+	f4 tr = f4_mul(A_B,(dc_xzyw));
+
+    tr = f4_horizontal_add(tr,tr);
+    tr = f4_horizontal_add(tr,tr);
+
+	// |M| = |A|*|D| + |B|*|C| - tr((A#B)(D#C)
+    detM = f4_sub(detM, tr);
+
+	const f4 adjSignMask = f4_create(1.0f,-1.0f,-1.0f,1.0f);
+	// (1/|M|, -1/|M|, -1/|M|, 1/|M|)
+	f4 rDetM = f4_div(adjSignMask, detM);
+
+	X_ = f4_mul(X_,rDetM);
+	Y_ = f4_mul(Y_,rDetM);
+	Z_ = f4_mul(Z_,rDetM);
+	W_ = f4_mul(W_,rDetM);
+
+	// apply adjugate and store, here we combine adjugate shuffle and store shuffle
+    f4 c0 = f4_create(X_.w,X_.y,Y_.w,Y_.y);//X_.wy(), Y_.wy());//, 3, 1, 3, 1));
+    f4 c1 = f4_create(X_.z,X_.x,Y_.z,Y_.x);//X_.zx(), Y_.zx());//, 2, 0, 2, 0);
+    f4 c2 = f4_create(Z_.w,Z_.x,W_.w,W_.x);//Z_.wx(), W_.wx());//, 3, 1, 3, 1);
+    f4 c3 = f4_create(Z_.z,Z_.x,W_.z,W_.x);//Z_.zx(), W_.zx());//, 2, 0, 2, 0);
+	r = f4x4_create_vector(c0,c1,c2,c3);
+ 	return r;
+}
+//END INVERSE
+
 quaternion quaternion_create(f32 x, f32 y, f32 z, f32 w)
 {
     quaternion result = {0};
@@ -901,8 +1025,94 @@ quaternion slerp(quaternion q1, quaternion q2, float t)
     }
 }
 
-#if 0
+f4x4 init_pers_proj_matrix(f2 buffer_dim,f32 fov_y ,f2 far_near)
+{
+    f32 near_clip_plane = far_near.x;
+    f32 far_clip_plane = far_near.y;
+	f32 tangent = tanf(radians((fov_y / 2)));
+	f32 aspect_ratio = buffer_dim.x / buffer_dim.y;
+	f32 z_depth_range = far_clip_plane - near_clip_plane;
 
-#endif
+    f32 a = 1.0f / (tangent * aspect_ratio);
+    f32 b = 1.0f / tangent;
+    f32 z = -((far_clip_plane + near_clip_plane) / z_depth_range);
+    f32 z2 = -((2.0f * far_clip_plane * near_clip_plane) / z_depth_range);
+	f4x4 result = f4x4_create_row(a, b, z,0);
 
+    result.c2.w = (-1);
+	result.c3.x = (0);
+	result.c3.y = (0);
+	result.c3.z = (z2);
+	return result;
+}
 
+f4x4 init_ortho_proj_matrix(f2 size,f32 near_clip_plane ,f32 far_clip_plane)
+{
+	f32 r = size.x;
+	f32 l = -r;
+	f32 t = size.y;
+	f32 b = -t;
+	f32 zero = 2.0f / (r - l);
+	f32 five = 2.0f / (t - b);
+	f32 ten = -2.0f / (far_clip_plane - near_clip_plane);
+
+	f4x4 result = f4x4_create_row(zero, five, ten,1);
+
+	result.c3.x = (-((r + l)  / (r - l)));
+	result.c3.y = (-((t + b)  / (t - b)));
+	result.c3.z = ( 0 );
+	return result;
+}
+
+f4x4 set_camera_view(f3 p,f3 d,f3 u)
+{
+	f3 cam_right = (cross(u, d));
+	f3 cam_up = (cross(d, cam_right));
+	d = f3_normalize(d);
+ 	return f4x4_create(cam_right.x,     cam_up.x,     d.x,     0,
+                     cam_right.y,     cam_up.y,     d.y,     0,
+                     cam_right.z,     cam_up.z,     d.z,     0,
+                    -f3_dot(cam_right, p),-f3_dot(cam_up, p),-f3_dot(d, p),1.0f);
+}
+
+quaternion f3_axis_angle(f3 axis,f32 angle)
+{
+    f32 sina, cosa;
+    sincos(0.5f * radians(angle),&sina,&cosa);
+    f3 r = f3_mul_s(f3_normalize(axis),sina);
+    return quaternion_create_f4(f4_create(r.x,r.y,r.z,cosa));
+}
+
+f3 f3_world_local_p(f4x4 m,f3 a)
+{
+    f4 result = f4x4_mul_f4(f4x4_inverse(m),f4_create(a.x,a.y,a.z,1.0f));
+    return f3_create(result.x,result.y,result.z);
+}
+
+f3 f3_local_world_p(f4x4 m,f3 a)
+{
+    f4 result = f4x4_mul_f4(m,f4_create(a.x,a.y,a.z,1.0f));
+    return f3_create(result.x,result.y,result.z);
+}
+
+f3 quaternion_mul_f3(quaternion q, f3 dir)
+{
+	f3 qv = f3_create(q.x,q.y,q.z);
+	f3 t = f3_s_mul(2,cross(dir,qv));
+	return f3_mul(f3_add_s(dir,q.w),f3_add(t,cross(t, qv)));
+}
+
+f3 quaternion_forward(quaternion q)
+{
+	return f3_normalize(quaternion_mul_f3(q, f3_create(0, 0, 1)));
+}
+
+f3 quaternion_up(quaternion q)
+{
+	return f3_normalize(quaternion_mul_f3(q, f3_create(0, 1, 0)));
+}
+
+f3 quaternion_right(quaternion q)
+{
+	return f3_normalize(quaternion_mul_f3(q, f3_create(1, 0, 0)));
+}

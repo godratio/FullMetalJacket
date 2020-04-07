@@ -166,7 +166,10 @@ void* fmj_stretch_buffer_checkout_ptr_(FMJStretchBuffer* buffer,u64 index)
 {
 	ASSERT(buffer);
     buffer->borrow_count++;
-    return fmj_fixed_buffer_get_(&buffer->fixed,index);
+    ASSERT(buffer);
+	if (index < 0 || index > buffer->fixed.count - 1 || buffer->fixed.count == 0)return 0;
+	return  (uint8_t*)buffer->fixed.base + (index * buffer->fixed.unit_size);    
+//    return fmj_fixed_buffer_get_(&buffer->fixed,index);
 }
 
 void* fmj_stretch_buffer_get_(FMJStretchBuffer* buffer,u64 index)

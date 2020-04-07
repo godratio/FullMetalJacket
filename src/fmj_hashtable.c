@@ -169,6 +169,7 @@ FMJHashAddElementResult fmj_hashtable_add(FMJHashTable* h_table,void* key,u64 ke
             }
             ++lu->collision_count;            
         }
+        fmj_stretch_buffer_check_in(&h_table->collisions);
 	}
     result.result = hash_index;
     return result;
@@ -214,6 +215,7 @@ void* fmj_hashtable_get_(FMJHashTable* h_table,void* key,u64 size)
                 fmj_stretch_buffer_check_in(&h_table->key_backing_array);
                 at = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_(&h_table->collisions,at->next_index);
             }
+            fmj_stretch_buffer_check_in(&h_table->collisions);
         }
 	}
 	return result;
@@ -325,7 +327,7 @@ void fmj_hashtable_remove(FMJHashTable* h_table,void* key)
                 }
                 ASSERT(free_index >= 0 && free_index <= h_table->table_size);
                 fmj_stretch_buffer_push(&h_table->collision_free_list,(void*)&free_index);
-
+                fmj_stretch_buffer_check_in(&h_table->collisions);
             }
             else
             {
@@ -387,6 +389,7 @@ bool fmj_hashtable_contains(FMJHashTable* h_table,void* key,uint64_t size)
                 at = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_(&h_table->collisions,at->next_index);
                 fmj_stretch_buffer_check_in(&h_table->key_backing_array);                    
             }
+            fmj_stretch_buffer_check_in(&h_table->key_backing_array);
         }
         
     }

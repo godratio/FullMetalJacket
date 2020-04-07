@@ -8,5 +8,6 @@
 #include "fmj_file.c"
 #include "fmj_thread.c"
 #include "fmj_math.c"
-
+#include "fmj_3dtrans.c"
+#include "fmj_sprite.c"
 

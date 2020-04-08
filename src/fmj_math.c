@@ -1117,3 +1117,11 @@ f3 quaternion_right(quaternion q)
 {
 	return f3_normalize(quaternion_mul_f3(q, f3_create(1, 0, 0)));
 }
+
+f3 f3_rotate(quaternion q, f3 dir)
+{
+    f3 t = f3_s_mul(2.0f,cross(f3_create(q.x,q.y,q.z), dir));
+    f3 a = f3_s_mul(q.w,t);
+    f3 ca = cross(f3_create(q.x,q.y,q.z), t);
+    return f3_add(f3_add(dir,a),ca);
+}

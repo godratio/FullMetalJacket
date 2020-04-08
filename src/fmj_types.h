@@ -77,6 +77,7 @@ void fmj_memory_copy(void* dst,void* src,umm size);
 struct FMJMemoryArena
 {
     void* base;
+    void* aligned_base;
     umm size;
     u32 used;
     u32 temp_count;
@@ -697,6 +698,7 @@ f4 f4_negate(f4 x);
 f4x4 init_pers_proj_matrix(f2 buffer_dim, f32 fov_y, f2 far_near);
 f4x4 init_ortho_proj_matrix(f2 size, f32 near_clip_plane, float far_clip_plane);
 f4x4 set_camera_view(f3 p,f3 forward_dir,f3 up_dir);
+f3 f3_rotate(quaternion q, f3 dir);
 //END MATH API
 
 //BEGIN 3D Tranform api
@@ -743,14 +745,17 @@ struct FMJSpriteBatch
 
 struct FMJSprite
 {
-    f2 uv;
+    u32 tex_id;
+    f2 uvs[4];
     f4 color;
     bool is_visible;    
 }typedef FMJSprite;
 
 void fmj_sprite_add_verts_(f32* v,f3 p[],f4 colors[],f2 uv[]);
+void fmj_sprite_add_quad_(f32* v,f3 p,quaternion r,f2 dim,f4 color,f2 uv[]);
 void fmj_sprite_add_rect(FMJMemoryArena* arena,f3 p[],f4 colors[],f2 uv[]);
-
+void fmj_sprite_add_quad(FMJMemoryArena* arena,f3 p,quaternion r,f3 scale,f4 colors,f2 uv[]);
+FMJSprite fmj_sprite_init(u32 tex_id,f2 uvs[],f4 color,bool is_visible);
 //End Sprite API
 
 

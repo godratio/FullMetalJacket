@@ -7,7 +7,7 @@ FMJFixedBuffer fmj_fixed_buffer_init(umm capacity,umm unit_size,u32 alignment)
     ASSERT(unit_size >= alignment);    
     ASSERT(unit_size > 0);
     FMJFixedBuffer result = {0};
-	umm start_alloc_size = capacity * unit_size;
+	umm start_alloc_size = capacity * unit_size + (alignment*capacity);
     result.total_size = 0;
     result.unit_size = unit_size;
     result.capacity = capacity;

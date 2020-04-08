@@ -302,6 +302,7 @@ f32 f3_length(f3 a)
 {
     return sqrtf(f3_dot(a, a));
 }
+
 f32 f4_length(f4 a)
 {
     return sqrtf(f4_dot(a, a));
@@ -1066,8 +1067,8 @@ f4x4 init_ortho_proj_matrix(f2 size,f32 near_clip_plane ,f32 far_clip_plane)
 
 f4x4 set_camera_view(f3 p,f3 d,f3 u)
 {
-	f3 cam_right = (cross(u, d));
-	f3 cam_up = (cross(d, cam_right));
+	f3 cam_right = cross(u, d);
+	f3 cam_up = cross(d, cam_right);
 	d = f3_normalize(d);
  	return f4x4_create(cam_right.x,     cam_up.x,     d.x,     0,
                      cam_right.y,     cam_up.y,     d.y,     0,
@@ -1099,7 +1100,7 @@ f3 quaternion_mul_f3(quaternion q, f3 dir)
 {
 	f3 qv = f3_create(q.x,q.y,q.z);
 	f3 t = f3_s_mul(2,cross(dir,qv));
-	return f3_mul(f3_add_s(dir,q.w),f3_add(t,cross(t, qv)));
+    return f3_add(dir,f3_add(f3_s_mul(q.w,t),cross(t,qv)));
 }
 
 f3 quaternion_forward(quaternion q)

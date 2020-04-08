@@ -20,7 +20,7 @@ f3 fmj_3dtrans_local_to_world_pos(FMJ3DTrans* ot,f3 a)
 void fmj_3dtrans_update(FMJ3DTrans* ot)
 {
     fmj_3dtrans_matrix_set(ot);
-	ot->up = quaternion_up(ot->r);
+	ot->up = quaternion_up(ot->r); 
 	ot->right = quaternion_right(ot->r);
 	ot->forward = quaternion_forward(ot->r);
 }

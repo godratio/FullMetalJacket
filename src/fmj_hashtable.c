@@ -96,6 +96,7 @@ FMJHashAddElementResult fmj_hashtable_add(FMJHashTable* h_table,void* key,u64 ke
                     result.is_succeed = false;
                     result.result = 0;
                     fmj_stretch_buffer_check_in(&h_table->key_backing_array);
+                    fmj_stretch_buffer_check_in(&h_table->collisions);                    
                     return result;
                 }
                 last_at_index = at->index;
@@ -167,9 +168,10 @@ FMJHashAddElementResult fmj_hashtable_add(FMJHashTable* h_table,void* key,u64 ke
             {
                 lu->collision_head_index = new_coll_index;
             }
-            ++lu->collision_count;            
+            ++lu->collision_count;
+            fmj_stretch_buffer_check_in(&h_table->collisions);            
         }
-        fmj_stretch_buffer_check_in(&h_table->collisions);
+
 	}
     result.result = hash_index;
     return result;

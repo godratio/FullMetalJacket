@@ -756,6 +756,7 @@ void fmj_sprite_add_quad_(f32* v,f3 p,quaternion r,f2 dim,f4 color,f2 uv[]);
 void fmj_sprite_add_rect(FMJMemoryArena* arena,f3 p[],f4 colors[],f2 uv[]);
 void fmj_sprite_add_quad(FMJMemoryArena* arena,f3 p,quaternion r,f3 scale,f4 colors,f2 uv[]);
 FMJSprite fmj_sprite_init(u32 tex_id,f2 uvs[],f4 color,bool is_visible);
+void fmj_sprite_add_quad_notrans(FMJMemoryArena* arena,f3 p,quaternion r,f3 scale,f4 colors,f2 uv[]);
 //End Sprite API
 
 

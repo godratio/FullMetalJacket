@@ -1,3 +1,4 @@
+#include "fmj_types.h"
 
 FMJSprite fmj_sprite_init(u32 tex_id,f2 uvs[],f4 color,bool is_visible)
 {
@@ -157,6 +158,17 @@ void fmj_sprite_add_quad(FMJMemoryArena* arena,f3 p,quaternion r,f3 scale,f4 col
     FMJMemoryArenaPushParams params = fmj_arena_push_params_default();
     params.flags = fmj_arena_push_params_flag_none;
     f32* v = (f32*)PUSHSIZE(arena,SIZE_OF_SPRITE_IN_BYTES,params);
+    fmj_sprite_add_quad_(v,p,r,f2_create(scale.x,scale.y),colors,uv);
+}
+
+void fmj_sprite_add_quad_notrans(FMJMemoryArena* arena,f3 p,quaternion r,f3 scale,f4 colors,f2 uv[])
+{
+    FMJMemoryArenaPushParams params = fmj_arena_push_params_default();
+    params.flags = fmj_arena_push_params_flag_none;
+    f32* v = (f32*)PUSHSIZE(arena,SIZE_OF_SPRITE_IN_BYTES,params);
+    p = f3_create(0,0,0);
+    r = f3_axis_angle(f3_create(0,0,1),0);
+    scale = f3_create(1,1,1);
     fmj_sprite_add_quad_(v,p,r,f2_create(scale.x,scale.y),colors,uv);
 }
 

@@ -153,6 +153,35 @@ void fmj_sprite_add_rect(FMJMemoryArena* arena,f3 p[],f4 colors[],f2 uv[])
     fmj_sprite_add_verts_(v,p,colors,uv);
 }
 
+void fmj_sprite_add_rect_with_dim(FMJMemoryArena* arena,f4 dim,f32 z,f4 color,f2 uv[])
+{
+//NOTE(Ray):top and bottom are flipped here for now
+    f3 points[4];
+
+//    points[0] = float3(dim.left() ,dim.bottom() ,z);
+//        points[1] = float3(dim.right(),dim.bottom() ,z);
+//        points[2] = float3(dim.right(),dim.top() ,z);
+//        points[3] = float3(dim.left() ,dim.top()    ,z);
+    
+    points[0] = f3_create(dim.left ,dim.top     ,z);
+    points[1] = f3_create(dim.right,dim.top     ,z);
+    points[2] = f3_create(dim.right ,dim.bottom   ,z);
+    points[3] = f3_create(dim.left,dim.bottom ,z);
+    
+    f4 colors[6];
+    colors[0] = color;
+    colors[1] = color;
+    colors[2] = color;
+    colors[3] = color;
+    colors[4] = color;
+    colors[5] = color;
+
+    FMJMemoryArenaPushParams params = fmj_arena_push_params_default();
+    params.flags = fmj_arena_push_params_flag_none;
+    f32* v = (f32*)PUSHSIZE(arena,SIZE_OF_SPRITE_IN_BYTES,params);
+    fmj_sprite_add_verts_(v,points,colors,uv);
+}
+
 void fmj_sprite_add_quad(FMJMemoryArena* arena,f3 p,quaternion r,f3 scale,f4 colors,f2 uv[])
 {
     FMJMemoryArenaPushParams params = fmj_arena_push_params_default();

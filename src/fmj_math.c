@@ -69,7 +69,7 @@ f2 f2_div(f2 a,f2 b)
 {
     f2 r = {0};
     r.x = a.x / b.x;
-    r.y = b.x / b.y;
+    r.y = a.y / b.y;
     return r;
 }
 
@@ -1062,6 +1062,15 @@ f4x4 init_ortho_proj_matrix(f2 size,f32 near_clip_plane ,f32 far_clip_plane)
 	result.c3.x = (-((r + l)  / (r - l)));
 	result.c3.y = (-((t + b)  / (t - b)));
 	result.c3.z = ( 0 );
+	return result;
+}
+
+f4x4 init_screen_space_matrix(f2 buffer_dim)
+{
+	f2 ab = f2_s_div(2.0f,buffer_dim);
+	f4x4 result = f4x4_create_row(ab.x, ab.y, 1,1);
+	result.c3.x = -1;
+	result.c3.y = -1;
 	return result;
 }
 

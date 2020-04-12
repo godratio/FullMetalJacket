@@ -419,8 +419,7 @@ union f3
     };
 } typedef f3;
 
-union
-f4
+union f4
 {
     struct
     {
@@ -435,6 +434,13 @@ f4
         f32 g;
         f32 b;
         f32 a;
+    };
+    struct
+    {
+        f32 left;
+        f32 top;
+        f32 right;
+        f32 bottom;
     };
     struct
     {
@@ -693,10 +699,9 @@ f4  f4_degrees(f4 x);
 
 f4 f4_negate(f4 x);
 
-//f4x4 init_pers_proj_matrix(f2 buffer_dim, f32 fov_y = 68.0f, float2 far_near = f2_create(0.5f, 1000.0f));
-//f4x4 init_ortho_proj_matrix(f2 size, f32 near_clip_plane = 0.1f, float far_clip_plane = 1000.0f);
 f4x4 init_pers_proj_matrix(f2 buffer_dim, f32 fov_y, f2 far_near);
 f4x4 init_ortho_proj_matrix(f2 size, f32 near_clip_plane, float far_clip_plane);
+f4x4 init_screen_space_matrix(f2 buffer_dim);
 f4x4 set_camera_view(f3 p,f3 forward_dir,f3 up_dir);
 f3 f3_rotate(quaternion q, f3 dir);
 //END MATH API
@@ -737,7 +742,6 @@ f3 fmj_3dtrans_transform_p(f4x4 a,f3 b);
 #define SIZE_OF_SPRITE_VERT_IN_BYTES ((sizeof(f32) * 3) + (4 * sizeof(f32)) + (2 * sizeof(f32)))//one p v3 + one color v4 + one uv v2 = one vert data
 #define SIZE_OF_SPRITE_IN_BYTES (SIZE_OF_SPRITE_VERT_IN_BYTES * 6)
 
-
 struct FMJSpriteBatch
 {
     FMJMemoryArena arena;    
@@ -748,18 +752,113 @@ struct FMJSprite
     u32 tex_id;
     f2 uvs[4];
     f4 color;
-    bool is_visible;    
+    bool is_visible;
+    u64 material_id;
 }typedef FMJSprite;
+
+struct FMJSpriteNineSlice
+{
+    u32 tex_id;
+    f2 uvs[4];
+    f4 color;
+    f4 slice_dim;
+    bool is_visible;
+}typedef FMJSpriteNineSlice;
 
 void fmj_sprite_add_verts_(f32* v,f3 p[],f4 colors[],f2 uv[]);
 void fmj_sprite_add_quad_(f32* v,f3 p,quaternion r,f2 dim,f4 color,f2 uv[]);
 void fmj_sprite_add_rect(FMJMemoryArena* arena,f3 p[],f4 colors[],f2 uv[]);
+void fmj_sprite_add_rect_with_dim(FMJMemoryArena* arena,f4 dim,f32 z,f4 color,f2 uv[]);
 void fmj_sprite_add_quad(FMJMemoryArena* arena,f3 p,quaternion r,f3 scale,f4 colors,f2 uv[]);
 FMJSprite fmj_sprite_init(u32 tex_id,f2 uvs[],f4 color,bool is_visible);
 void fmj_sprite_add_quad_notrans(FMJMemoryArena* arena,f3 p,quaternion r,f3 scale,f4 colors,f2 uv[]);
 //End Sprite API
 
+//BEGIN UI API
+struct FMJUIRect
+{
+    f4 dim;
+    f4 anchor;
+    f4 offset;
+    f4 current_color;
+    f4 color;
+    f4 highlight_color;
+    f32 z;
+} typedef FMJUIRect;
 
+enum FMJUINodeType
+{
+    fmj_ui_node_none,
+    fmj_ui_node_label,
+    fmj_ui_node_sprite,
+    fmj_node_sprite_nine_slice
+}typedef FMJUINodeType;
+
+struct FMJUINode
+{
+    FMJUIRect rect;
+    FMJStretchBuffer children;
+    FMJString* text;
+    bool interactable;
+    bool use_anchor;
+    
+    FMJUINodeType type;    
+    u64 sprite_id;
+}typedef FMJUINode;
+
+struct FMJUIHotNodeState
+{
+    f2 mouse_p;
+    f2 prev_mouse_p;
+    FMJUINode* node;
+    FMJUINode* prev_node;
+}typedef FMJUIHotNodeState;
+
+struct FMJUIState
+{
+    FMJUINode parent_node;
+    FMJUIHotNodeState hot_node_state;
+}typedef FMJUIState;
+
+f2 fmj_ui_get_rect_dim(FMJUIRect rect);
+void fmj_ui_calculate_rect_dim(FMJUIRect* child_rect,FMJUIRect parent_rect);
+void fmj_ui_get_rect_dim_from_p(FMJUIRect* child_rect,FMJUIRect parent_rect,f3 p,f2 dim);
+void fmj_ui_evaluate_node(FMJUINode* node,FMJUIHotNodeState* hot_node_state);
+void fmj_ui_evaluate_on_node_recursively(FMJUINode* node,void (*eval_func)(void*));
+//END UI API
+
+//BEGIN RENDER COMMAND API
+
+struct FMJRenderGeometry
+{
+    u64 id;
+    u64 offset;
+}typedef FMJRenderGeometry;
+
+struct FMJRenderMaterial
+{
+    u64 id;
+    void* pipeline_state;//finalized depth stencil state etc... 
+    f4 scissor_rect;
+    f4 viewport_rect;
+
+}typedef FMJRenderMaterial;
+
+struct FMJRenderCommand
+{
+    FMJRenderGeometry geometry;
+    u64 material_id;
+    u64 model_matrix_id;
+    u64 camera_matrix_id;
+    u64 perspective_matrix_id;
+
+    //TODO(Ray):Create a mapping between pipeline state root sig slots..
+    //and inputs from the application ie textures buffers etc..
+    //for now we just throw on the simple ones we are using now. 
+    u64 texture_id;    
+} typedef FMJRenderCommand;
+
+//END RENDER COMMAND API
 
 #define FMJ_TYPES_H
 #endif

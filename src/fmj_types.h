@@ -530,6 +530,7 @@ f4x4 f4x4_create_from_quaternion_translation(quaternion rotation,f3 translation)
 f4x4 f4x4_create_with_scale(f32 x, f32 y, f32 z);
 f4x4 f4x4_create_with_translate(f3 a);
 f4x4 f4x4_create_from_trs(f3 t,quaternion r,f3 s);
+f4x4 f4x4_inverse(f4x4 a);
     
 f4x4 f4x4_transpose(f4x4 a);
 f4x4 f4x4_mul(f4x4 a,f4x4 b);
@@ -704,6 +705,11 @@ f4x4 init_ortho_proj_matrix(f2 size, f32 near_clip_plane, float far_clip_plane);
 f4x4 init_screen_space_matrix(f2 buffer_dim);
 f4x4 set_camera_view(f3 p,f3 forward_dir,f3 up_dir);
 f3 f3_rotate(quaternion q, f3 dir);
+//copy pasted from 
+//https://stackoverflow.com/questions/5289613/generate-random-float-between-two-floats/5289624
+f32 f32_random_range(f32 a, f32 b);
+f3 f3_screen_to_world_point(f4x4 projection_matrix,f4x4 cam_matrix,f2 buffer_dim, f2 screen_xy,f32 z_depth);
+f2 f2_world_to_screen_point(f4x4 projection_matrix,f4x4 camera_matrix,f2 buffer_dim, f3 p);
 //END MATH API
 
 //BEGIN 3D Tranform api
@@ -749,6 +755,7 @@ struct FMJSpriteBatch
 
 struct FMJSprite
 {
+    u64 id;
     u32 tex_id;
     f2 uvs[4];
     f4 color;

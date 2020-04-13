@@ -451,9 +451,32 @@ f4 f4_exp(f4 x) { return f4_create(expf(x.x), expf(x.y), expf(x.z), expf(x.w)); 
  f3  f3_fmod(f3 x, f3 y) { return  f3_create(fmodf(x.x, y.x), fmodf(x.y, y.y),fmodf(x.z, y.z)); }
  f4  f4_fmod(f4 x, f4 y) { return  f4_create(fmodf(x.x,y.x), fmodf(x.y,y.y), fmodf(x.z,y.z), fmodf(x.w,y.w)); }
 
-f2 f2_reflect(f2 i, f2 n) { return f2_mul(f2_sub_s(i,2.0f),f2_mul_s(n,f2_dot(i,n))); }
-f3 f3_reflect(f3 i, f3 n) { return f3_mul(f3_sub_s(i,2.0f),f3_mul_s(n,f3_dot(i,n))); }
-f4 f4_reflect(f4 i, f4 n) { return f4_mul(f4_sub_s(i,2.0f),f4_mul_s(n,f4_dot(i,n))); }
+f2 f2_reflect(f2 i, f2 n)
+{
+    f32 dp = f2_dot(i,n);
+    f2 ip = f2_mul_s(n,dp);
+    f2 sp = f2_s_mul(2,ip);
+    f2 result = f2_sub(i,sp);    
+    return result;
+}
+
+f3 f3_reflect(f3 i, f3 n)
+{
+    f32 dp = f3_dot(i,n);
+    f3 ip = f3_mul_s(n,dp);
+    f3 sp = f3_s_mul(2,ip);
+    f3 result = f3_sub(i,sp);
+    return result;
+}
+
+f4 f4_reflect(f4 i, f4 n)
+{
+    f32 dp = f4_dot(i,n);
+    f4 ip = f4_mul_s(n,dp);
+    f4 sp = f4_s_mul(2,ip);
+    f4 result = f4_sub(i,sp);
+    return result;    
+}
 
 f32  radians(f32 x) { return x * 0.0174532925f; }
 f2  f2_radians(f2 x) { return f2_mul_s(x,0.0174532925f); }
@@ -709,6 +732,7 @@ f4 f4_mat2mul(f4 a,f4 b)
     return f4_add(aa,bb);
 }
 
+/*
 f4 f4_mat2adjmul(f4 a,f4 b)
 {
     f4 t1 = f4_create(a.w,a.w,a.x,a.x);
@@ -737,11 +761,11 @@ f4x4 f4x4_inverse(f4x4 a)
     // A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
     // sub matrices
 
-	f4 A = f4_create(a.c1.z,a.c1.w,a.c0.z,a.c0.w);//lhps(a.c0.m, a.c1.m);
- 	f4 B = f4_create(a.c1.x,a.c1.y,a.c0.x,a.c0.y);// hlps(a.c0.m, a.c1.m);
+	f4 A = f4_create(a.c1.z,a.c1.w,a.c0.z,a.c0.w);//float4(in_matrix.c1.zw(), in_matrix.c0.zw());
+ 	f4 B = f4_create(a.c1.x,a.c1.y,a.c0.x,a.c0.y);//float4(in_matrix.c1.xy(), in_matrix.c0.xy());
  	
- 	f4 C = f4_create(a.c3.z,a.c3.w, a.c2.z,a.c2.w);// lhps(a.c2.m, a.c3.m);
-	f4 D = f4_create(a.c3.x,a.c3.y, a.c2.x,a.c2.y) ;// VecShuffle_2323(a.c2.m, a.c3.m);
+ 	f4 C = f4_create(a.c3.z,a.c3.w, a.c2.z,a.c2.w);//float4(in_matrix.c3.zw(), in_matrix.c2.zw())
+	f4 D = f4_create(a.c3.x,a.c3.y, a.c2.x,a.c2.y);//float4(in_matrix.c3.xy(), in_matrix.c2.xy())
 
 
 	f4 detA = f4_create_f(a.c0.x * a.c1.y - a.c0.y * a.c1.x);
@@ -796,6 +820,97 @@ f4x4 f4x4_inverse(f4x4 a)
 	r = f4x4_create_vector(c0,c1,c2,c3);
  	return r;
 }
+*/
+
+f4x4 f4x4_inverse(f4x4 m)
+{
+    f4 c0 = m.c0;
+    f4 c1 = m.c1;
+    f4 c2 = m.c2;
+    f4 c3 = m.c3;
+ 
+    f4 r0y_r1y_r0x_r1x = f4_create(c1.x,c1.y,c0.x,c0.y);//movelh(c1, c0);
+    f4 r0z_r1z_r0w_r1w = f4_create(c2.x,c2.y,c3.x,c3.y);//movelh(c2, c3);
+    f4 r2y_r3y_r2x_r3x = f4_create(c1.z,c1.w,c0.z,c0.w);//movehl(c0, c1);
+    f4 r2z_r3z_r2w_r3w = f4_create(c2.z,c2.w,c3.z,c3.w);//movehl(c3, c2);
+
+    f4 r1y_r2y_r1x_r2x = f4_create(c1.y,c1.z,c0.y,c0.z);//shuffle(c1, c0, ShuffleComponent.LeftY, ShuffleComponent.LeftZ, ShuffleComponent.RightY, ShuffleComponent.RightZ);
+    f4 r1z_r2z_r1w_r2w = f4_create(c2.y,c2.z,c3.y,c3.z);//shuffle(c2, c3, ShuffleComponent.LeftY, ShuffleComponent.LeftZ, ShuffleComponent.RightY, ShuffleComponent.RightZ);
+    f4 r3y_r0y_r3x_r0x = f4_create(c1.w,c1.x,c0.w,c0.x);//shuffle(c1, c0, ShuffleComponent.LeftW, ShuffleComponent.LeftX, ShuffleComponent.RightW, ShuffleComponent.RightX);
+    f4 r3z_r0z_r3w_r0w = f4_create(c2.w,c2.x,c3.w,c3.x);//shuffle(c2, c3, ShuffleComponent.LeftW, ShuffleComponent.LeftX, ShuffleComponent.RightW, ShuffleComponent.RightX);
+
+    f4 r0_wzyx = f4_create(r0z_r1z_r0w_r1w.z, r0z_r1z_r0w_r1w.x, r0y_r1y_r0x_r1x.x, r0y_r1y_r0x_r1x.z);//shuffle(r0z_r1z_r0w_r1w, r0y_r1y_r0x_r1x, ShuffleComponent.LeftZ, ShuffleComponent.LeftX, ShuffleComponent.RightX, ShuffleComponent.RightZ);
+    f4 r1_wzyx = f4_create(r0z_r1z_r0w_r1w.w, r0z_r1z_r0w_r1w.y, r0y_r1y_r0x_r1x.y, r0y_r1y_r0x_r1x.w);//shuffle(r0z_r1z_r0w_r1w, r0y_r1y_r0x_r1x, ShuffleComponent.LeftW, ShuffleComponent.LeftY, ShuffleComponent.RightY, ShuffleComponent.RightW);
+    f4 r2_wzyx = f4_create(r2z_r3z_r2w_r3w.z, r2z_r3z_r2w_r3w.x, r2y_r3y_r2x_r3x.x, r2y_r3y_r2x_r3x.z);//shuffle(r2z_r3z_r2w_r3w, r2y_r3y_r2x_r3x, ShuffleComponent.LeftZ, ShuffleComponent.LeftX, ShuffleComponent.RightX, ShuffleComponent.RightZ);
+    f4 r3_wzyx = f4_create(r2z_r3z_r2w_r3w.w, r2z_r3z_r2w_r3w.y, r2y_r3y_r2x_r3x.y, r2y_r3y_r2x_r3x.w);//shuffle(r2z_r3z_r2w_r3w, r2y_r3y_r2x_r3x, ShuffleComponent.LeftW, ShuffleComponent.LeftY, ShuffleComponent.RightY, ShuffleComponent.RightW);
+    f4 r0_xyzw = f4_create(r0y_r1y_r0x_r1x.z, r0y_r1y_r0x_r1x.x, r0z_r1z_r0w_r1w.x, r0z_r1z_r0w_r1w.z);//shuffle(r0y_r1y_r0x_r1x, r0z_r1z_r0w_r1w, ShuffleComponent.LeftZ, ShuffleComponent.LeftX, ShuffleComponent.RightX, ShuffleComponent.RightZ);
+
+     // Calculate remaining inner term pairs. inner terms have zw=-xy, so we only have to calculate xy and can pack two pairs per vector.
+   // Calculate remaining inner term pairs. inner terms have zw=-xy, so we only have to calculate xy and can pack two pairs per vector.
+    f4 inner12_23 = f4_sub((f4_mul(r1y_r2y_r1x_r2x,r2z_r3z_r2w_r3w)),(f4_mul(r1z_r2z_r1w_r2w,r2y_r3y_r2x_r3x)));//inner12_23 = r1y_r2y_r1x_r2x * r2z_r3z_r2w_r3w - r1z_r2z_r1w_r2w * r2y_r3y_r2x_r3x;
+    f4 inner02_13 = f4_sub((f4_mul(r0y_r1y_r0x_r1x,r2z_r3z_r2w_r3w)),(f4_mul(r0z_r1z_r0w_r1w,r2y_r3y_r2x_r3x)));//inner02_13 = r0y_r1y_r0x_r1x * r2z_r3z_r2w_r3w - r0z_r1z_r0w_r1w * r2y_r3y_r2x_r3x;
+    f4 inner30_01 = f4_sub((f4_mul(r3z_r0z_r3w_r0w,r0y_r1y_r0x_r1x)),(f4_mul(r3y_r0y_r3x_r0x,r0z_r1z_r0w_r1w)));//inner30_01 = r3z_r0z_r3w_r0w * r0y_r1y_r0x_r1x - r3y_r0y_r3x_r0x * r0z_r1z_r0w_r1w;
+
+    // Expand inner terms back to 4 components. zw signs still need to be flipped
+    f4 inner12 = f4_create(inner12_23.x,inner12_23.z,inner12_23.z,inner12_23.x);//shuffle(inner12_23, inner12_23, ShuffleComponent.LeftX, ShuffleComponent.LeftZ, ShuffleComponent.RightZ, ShuffleComponent.RightX);
+    f4 inner23 = f4_create(inner12_23.y,inner12_23.w,inner12_23.w,inner12_23.y);//shuffle(inner12_23, inner12_23, ShuffleComponent.LeftY, ShuffleComponent.LeftW, ShuffleComponent.RightW, ShuffleComponent.RightY);
+
+    f4 inner02 = f4_create(inner02_13.x,inner02_13.z,inner02_13.z,inner02_13.x);//shuffle(inner02_13, inner02_13, ShuffleComponent.LeftX, ShuffleComponent.LeftZ, ShuffleComponent.RightZ, ShuffleComponent.RightX);
+    f4 inner13 = f4_create(inner02_13.y,inner02_13.w,inner02_13.w,inner02_13.y);//shuffle(inner02_13, inner02_13, ShuffleComponent.LeftY, ShuffleComponent.LeftW, ShuffleComponent.RightW, ShuffleComponent.RightY);
+
+    // Calculate minors
+    //r3_wzyx * inner12 - r2_wzyx * inner13 + r1_wzyx * inner23;
+    f4 ra = f4_mul(r3_wzyx,inner12);
+    f4 ra2 = f4_mul(r2_wzyx,inner13);
+    f4 ra3 = f4_mul(r1_wzyx,inner23);
+    f4 sub = f4_sub(ra,ra2);    
+    f4 minors0 = f4_add(sub,ra3);
+
+    
+    f4 denom = f4_mul(r0_xyzw,minors0);    
+    
+    // Horizontal sum of denominator. Free sign flip of z and w compensates for missing flip in inner terms.
+    denom = f4_add(denom,f4_create(denom.y,denom.x,denom.w,denom.z));//shuffle(denom, denom, ShuffleComponent.LeftY, ShuffleComponent.LeftX, ShuffleComponent.RightW, ShuffleComponent.RightZ);   // x+y        x+y            z+w            z+w
+    denom = f4_add(denom,f4_create(denom.z,denom.z,denom.x,denom.x));//shuffle(denom, denom, ShuffleComponent.LeftZ, ShuffleComponent.LeftZ, ShuffleComponent.RightX, ShuffleComponent.RightX);   // x+y-z-w  x+y-z-w        z+w-x-y        z+w-x-y
+
+    f4 rcp_denom_ppnn = f4_div(f4_create_f(1.0f),denom);
+    f4x4 res;
+    res.c0 = f4_mul(minors0,rcp_denom_ppnn);
+
+    f4 inner30 = f4_create(inner30_01.x,inner30_01.z,inner30_01.z,inner30_01.x);//shuffle(inner30_01, inner30_01, ShuffleComponent.LeftX, ShuffleComponent.LeftZ, ShuffleComponent.RightZ, ShuffleComponent.RightX);
+    f4 inner01 = f4_create(inner30_01.y,inner30_01.w,inner30_01.w,inner30_01.y);//shuffle(inner30_01, inner30_01, ShuffleComponent.LeftY, ShuffleComponent.LeftW, ShuffleComponent.RightW, ShuffleComponent.RightY);
+
+    f4 minors1 = f4_sub((f4_sub((f4_mul(r2_wzyx,inner30)),(f4_mul(r0_wzyx,inner23)))) , (f4_mul(r3_wzyx,inner02)));
+    res.c1 = f4_mul(minors1,rcp_denom_ppnn);
+
+    //float4 minors2 = r0_wzyx * inner13 - r1_wzyx * inner30 - r3_wzyx * inner01;
+    f4 a = f4_mul(r0_wzyx,inner13);
+    f4 b = f4_mul(r1_wzyx,inner30);
+    f4 c = f4_mul(r3_wzyx,inner01);
+
+    //NOTE(RAY):We have flipped the order of this subtraction to get the correct results.
+    //however its still seems janky and incorrect way to do it need to investigate later.
+    //def will come up.
+//    f4 suba = f4_sub(a,b);    
+    f4 suba = f4_sub(b,a);    
+    f4 minors2 = f4_sub(suba,c);
+    res.c2 = f4_mul(minors2,rcp_denom_ppnn);
+
+    //r1_wzyx * inner02 - r0_wzyx * inner12 + r2_wzyx * inner01;
+    a = f4_mul(r1_wzyx,inner02);//r1_wzyx * inner02
+    b = f4_mul(r0_wzyx,inner12);//r0_wzyx * inner12
+    c = f4_mul(r2_wzyx,inner01);// r2_wzyx * inner01
+
+    //NOTE(RAY):We have flipped the order of this subtraction to get the correct results.
+    //however its still seems janky and incorrect way to do it need to investigate later.
+    //def will come up.     
+//    f4 d = f4_sub(a,b);
+    f4 d = f4_sub(b,a);    
+    f4 minors3 = f4_add(d,c);
+    res.c3 = f4_mul(minors3,rcp_denom_ppnn);
+    return res;    
+}
+
 //END INVERSE
 
 quaternion quaternion_create(f32 x, f32 y, f32 z, f32 w)
@@ -1135,5 +1250,54 @@ f3 f3_rotate(quaternion q, f3 dir)
     f3 a = f3_s_mul(q.w,t);
     f3 ca = cross(qxyz, t);
     return f3_add(f3_add(dir,a),ca);
+}
+
+//copy pasted from 
+//https://stackoverflow.com/questions/5289613/generate-random-float-between-two-floats/5289624
+f32 f32_random_range(f32 a, f32 b)
+{
+    f32 random = ((f32) rand()) / (f32) RAND_MAX;
+    f32 diff = b - a;
+    f32 r = random * diff;
+    return a + r;
+}
+
+f3 f3_screen_to_world_point(f4x4 projection_matrix,f4x4 cam_matrix,f2 buffer_dim, f2 screen_xy, float z_depth)
+{
+	f4x4 pc_mat = f4x4_mul(projection_matrix,cam_matrix);
+	f4x4 inv_pc_mat = f4x4_transpose(f4x4_inverse(pc_mat));
+	f4 p = f4_create(
+        2.0f * screen_xy.x / buffer_dim.x - 1.0f,
+        2.0f * screen_xy.y / buffer_dim.y - 1.0f,
+        z_depth,
+        1.0f);
+
+	f4 w_div = f4_mul_f4x4(p , inv_pc_mat);
+    f3 f3_w_div = f3_create(w_div.x,w_div.y,w_div.z);
+	f32 w = safe_ratio_zero(1.0f, w_div.w);
+    return f3_mul_s(f3_w_div,w);
+}
+
+f2 f2_world_to_screen_point(f4x4 projection_matrix,f4x4 camera_matrix,f2 buffer_dim, f3 p)
+{
+	f4 input_p = f4_create(p.x,p.y,p.z,1.0f);
+    f32 aspect_ratio = buffer_dim.x / buffer_dim.y;
+	f4x4 view_projection_matrix = f4x4_mul(projection_matrix , camera_matrix);
+	f4 clip = f4_mul_f4x4(input_p,view_projection_matrix);
+	//w divide value should be z of output.
+	clip.w = (clip.z);
+
+	 //TODO(Ray):Use swizzlers here to help cut down on operations
+	//f3 div_w = clip.xyz() / clip.www();
+	f3 NDC = f3_create(
+        (safe_ratio_zero( clip.x , clip.w) + 1) * aspect_ratio,
+    	(safe_ratio_zero( clip.y , clip.w) + 1) * aspect_ratio,
+         safe_ratio_zero( clip.z , clip.w));
+
+	f2 Result = f2_create( NDC.x * safe_ratio_zero(buffer_dim.x , NDC.z),
+                           NDC.y *  safe_ratio_zero(buffer_dim.y , NDC.z));
+//	Result.x = NDC.x * buffer_dim.x / NDC.z;
+//	Result.y = NDC.y * buffer_dim.y / NDC.z;
+	return Result;
 }
 

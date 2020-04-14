@@ -8,6 +8,14 @@ f2 f2_create(f32 a,f32 b)
     return result;
 }
 
+f2 f2_create_f(f32 a)
+{
+    f2 result = {0};
+    result.x = a;
+    result.y = a;
+    return result;
+}
+
 f2 f2_add(f2 a,f2 b)
 {
     f2 r = {0};
@@ -92,6 +100,15 @@ f3 f3_create(f32 a,f32 b,f32 c)
     return r;
 }
 
+f3 f3_create_f(f32 a)
+{
+    f3 r = {0};
+    r.x = a;
+    r.y = a;
+    r.z = a;
+    return r;
+}
+
 f3 f3_add(f3 a,f3 b)
 {
     f3 r = {0};
@@ -167,7 +184,6 @@ f3 f3_div_s(f3 a,f32 b)
 {
     return f3_div(a,f3_create(b,b,b));
 }
-
 
 f4 f4_create(f32 a,f32 b,f32 c,f32 d)
 {

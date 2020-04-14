@@ -144,6 +144,9 @@ APIDEF FMJString fmj_string_strip_extension(FMJString file_name_or_path_with_ext
 APIDEF FMJString fmj_string_strip_and_output_extension(FMJString* file_name_or_path_with_extension,FMJString* ext,FMJMemoryArena *arena,bool keep_file_extension_delimeter);
 APIDEF FMJString fmj_string_pad_right(FMJString String,char PadChar,u32 PadAmount,FMJMemoryArena* Memory);
 APIDEF FMJString fmj_string_enforce_min_size(FMJString string,u32 min_size,FMJMemoryArena* arena);
+//TODO(Ray)://NOTE(ray):Both string allocs are put into the same arena which may not what we want all the time..
+//in the future look at a convient way to split the allocs.
+//the temp allocced string here should be just thrown away not appeneded to the passed in memory.
 #define fmj_string_append_char_to_char(front,back,arena) fmj_string_append(fmj_string_create(front,arena),fmj_string_create(back,arena),arena)
 #define fmj_string_append_char(front,back,arena) fmj_string_append(front,fmj_string_create(back,arena),arena)
 APIDEF FMJString fmj_string_append(FMJString front,FMJString back,FMJMemoryArena* arena);
@@ -470,6 +473,7 @@ struct f4x4
 }typedef f4x4;
 
 f2 f2_create(f32 a,f32 b);
+f2 f2_create_f(f32 a);
 f2 f2_add(f2 a,f2 b);
 f2 f2_s_add(f32 a,f2 b);
 f2 f2_sub(f2 a,f2 b);
@@ -482,6 +486,7 @@ f2 f2_s_div(f32 a,f2 b);
 f2 f2_div_s(f2 a,f32 b);
 
 f3 f3_create(f32 a,f32 b,f32 c);
+f3 f3_create_f(f32 a);
 f3 f3_add(f3 a,f3 b);
 f3 f3_s_add(f32 a,f3 b);
 f3 f3_sub(f3 a,f3 b);
@@ -701,6 +706,8 @@ f4  f4_degrees(f4 x);
 f4 f4_negate(f4 x);
 
 f4x4 init_pers_proj_matrix(f2 buffer_dim, f32 fov_y, f2 far_near);
+//NOTE(Ray):When using this function remember that you have to take into account
+//aspect ration for your size.
 f4x4 init_ortho_proj_matrix(f2 size, f32 near_clip_plane, float far_clip_plane);
 f4x4 init_screen_space_matrix(f2 buffer_dim);
 f4x4 set_camera_view(f3 p,f3 forward_dir,f3 up_dir);

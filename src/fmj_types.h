@@ -493,6 +493,7 @@ f3 f3_sub(f3 a,f3 b);
 f3 f3_s_sub(f32 a,f3 b);
 f3 f3_sub_s(f3 a,f32 b);
 f3 f3_mul(f3 a,f3 b);
+f3 f3_mul_s(f3 b,f32 a);
 f3 f3_s_mul(f32 a,f3 b);
 f3 f3_div(f3 a,f3 b);
 f3 f3_s_div(f32 a,f3 b);
@@ -816,8 +817,10 @@ struct FMJUINode
     bool interactable;
     bool use_anchor;
     
-    FMJUINodeType type;    
-    u64 sprite_id;
+    FMJUINodeType type;
+//TODO(Ray):Get rid of one of these two.    
+    u32 st_id;
+    FMJSprite sprite;
 }typedef FMJUINode;
 
 struct FMJUIHotNodeState

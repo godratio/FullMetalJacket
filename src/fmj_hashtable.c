@@ -103,7 +103,8 @@ FMJHashAddElementResult fmj_hashtable_add(FMJHashTable* h_table,void* key,u64 ke
                 //TODO(ray):reorder this algo so we can get rid of this function call.
                 //should be ok in single threaded use as we are not going to be resizing the buffer
                 //before access here.
-                at = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_(&h_table->collisions,at->next_index);
+                fmj_stretch_buffer_check_in(&h_table->collisions);
+                at = fmj_stretch_buffer_check_out(FMJHashCollisionEntry,&h_table->collisions,at->next_index);
                 fmj_stretch_buffer_check_in(&h_table->key_backing_array);
             }
 
@@ -119,12 +120,14 @@ FMJHashAddElementResult fmj_hashtable_add(FMJHashTable* h_table,void* key,u64 ke
             u64 new_coll_index = 0;
             if(h_table->collision_free_list.fixed.count == 0)
             {
+                fmj_stretch_buffer_check_in(&h_table->collisions);
                 new_coll_index = fmj_stretch_buffer_push(&h_table->collisions,(void*)&ce);
                 //Must be refetched due to the possible resizing of the collision pointers!!!
-                head_entry = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_(&h_table->collisions,lu->collision_head_index);
-                FMJHashCollisionEntry* new_coll_entry = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_(&h_table->collisions,new_coll_index);
+                head_entry = fmj_stretch_buffer_check_out(FMJHashCollisionEntry,&h_table->collisions,lu->collision_head_index);
+                FMJHashCollisionEntry* new_coll_entry = fmj_stretch_buffer_check_out(FMJHashCollisionEntry,&h_table->collisions,new_coll_index);
                 ASSERT(new_coll_index >= 0 && new_coll_index <= h_table->table_size);
                 new_coll_entry->index = new_coll_index;
+                fmj_stretch_buffer_check_in(&h_table->collisions);
             }
             else
             {
@@ -197,12 +200,9 @@ void* fmj_hashtable_get_(FMJHashTable* h_table,void* key,u64 size)
         {
             FMJHashValueEntry* ve = fmj_fixed_buffer_get_any(FMJHashValueEntry,&h_table->values, hash_index);
             result = ve->value;
-            fmj_stretch_buffer_check_in(&h_table->key_backing_array);
         }
         else
         {
-            fmj_stretch_buffer_check_in(&h_table->key_backing_array);
-            
             FMJHashCollisionEntry* head_entry = fmj_stretch_buffer_check_out(FMJHashCollisionEntry,&h_table->collisions,lu->collision_head_index);
             FMJHashCollisionEntry* at = head_entry;
             while(at)
@@ -215,10 +215,12 @@ void* fmj_hashtable_get_(FMJHashTable* h_table,void* key,u64 size)
                         result = at->value.value;
                 }
                 fmj_stretch_buffer_check_in(&h_table->key_backing_array);
-                at = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_(&h_table->collisions,at->next_index);
+                fmj_stretch_buffer_check_in(&h_table->collisions);
+                at = fmj_stretch_buffer_check_out(FMJHashCollisionEntry,&h_table->collisions,at->next_index);
             }
             fmj_stretch_buffer_check_in(&h_table->collisions);
         }
+        fmj_stretch_buffer_check_in(&h_table->key_backing_array);        
 	}
 	return result;
 }
@@ -280,13 +282,14 @@ void fmj_hashtable_remove(FMJHashTable* h_table,void* key)
                     at->value.value = 0;
                     fmj_stretch_buffer_clear_item(&h_table->key_backing_array,key_entry.backing_index);
                     found_match = true;
-                    fmj_stretch_buffer_check_in(&h_table->key_backing_array);                    
+                    fmj_stretch_buffer_check_in(&h_table->key_backing_array);
                     break;
                 }
                 //after we check for a match we set up the next iteration
                 //we keep one prev_at and
                 prev_at = at;
-                at = (FMJHashCollisionEntry*)fmj_stretch_buffer_get_(&h_table->collisions,at->next_index);
+                fmj_stretch_buffer_check_in(&h_table->collisions);
+                at = fmj_stretch_buffer_check_out(FMJHashCollisionEntry,&h_table->collisions,at->next_index);
                 fmj_stretch_buffer_check_in(&h_table->key_backing_array);                    
             }
 
@@ -329,12 +332,13 @@ void fmj_hashtable_remove(FMJHashTable* h_table,void* key)
                 }
                 ASSERT(free_index >= 0 && free_index <= h_table->table_size);
                 fmj_stretch_buffer_push(&h_table->collision_free_list,(void*)&free_index);
-                fmj_stretch_buffer_check_in(&h_table->collisions);
+
             }
             else
             {
             //printf("YOYOHASHTABLE::Could not find match to remove item.!");
             }
+            fmj_stretch_buffer_check_in(&h_table->collisions);
         }
     }
 }

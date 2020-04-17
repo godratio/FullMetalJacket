@@ -848,8 +848,12 @@ void fmj_ui_evaluate_on_node_recursively(FMJUINode* node,void (*eval_func)(void*
 
 struct FMJRenderGeometry
 {
-    u64 id;
+    f2 buffer_id_range;
+    u64 count;
     u64 offset;
+    u64 index_id;
+    u64 index_count;
+    bool is_indexed;
 }typedef FMJRenderGeometry;
 
 struct FMJRenderMaterial
@@ -868,11 +872,12 @@ struct FMJRenderCommand
     u64 model_matrix_id;
     u64 camera_matrix_id;
     u64 perspective_matrix_id;
-
+    
     //TODO(Ray):Create a mapping between pipeline state root sig slots..
     //and inputs from the application ie textures buffers etc..
     //for now we just throw on the simple ones we are using now. 
-    u64 texture_id;    
+    u64 texture_id;
+    bool is_indexed;
 } typedef FMJRenderCommand;
 
 //END RENDER COMMAND API

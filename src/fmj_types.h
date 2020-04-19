@@ -549,6 +549,7 @@ quaternion quaternion_create_f3x3(f3x3 a);
 quaternion quaternion_create_f4x4(f4x4 a);
 quaternion quaternion_create_f4(f4 a);
 quaternion quaternion_look_rotation(f3 forward, f3 up);
+quaternion quaternion_identity();
 quaternion quaternion_mul(quaternion a,quaternion b);
 quaternion quaternion_normalize(quaternion a);
 f32 quaternion_dot(quaternion a, quaternion b);
@@ -561,7 +562,6 @@ quaternion quaternion_slerp(quaternion q1, quaternion q2, f32 t);
 
 f4x4 look_at(f3 eye,f3 target,f3 up);
 
-f3 f3_rotate_by_quaterion(quaternion q, f3 dir);
 f3 f3_rotate_by_f4x4(f4x4 a,f3 dir);
 quaternion f3_axis_angle(f3 axis, f32 angle);
 f3 f4x4_transform(f4x4 a, f3 b);
@@ -862,7 +862,7 @@ struct FMJRenderMaterial
     void* pipeline_state;//finalized depth stencil state etc... 
     f4 scissor_rect;
     f4 viewport_rect;
-
+    u64 metallic_roughness_texture_id;
 }typedef FMJRenderMaterial;
 
 struct FMJRenderCommand

@@ -955,6 +955,11 @@ quaternion quaternion_create_zero()
     return result;
 }
 
+quaternion quaternion_identity()
+{
+    return quaternion_create(0,0,0,1);
+}
+
 quaternion quaternion_normalize(quaternion a)
 {
 	float root = sqrt(a.x * a.x + a.y * a.y + a.z * a.z + a.w * a.w);

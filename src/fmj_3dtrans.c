@@ -27,7 +27,7 @@ void fmj_3dtrans_update(FMJ3DTrans* ot)
 
 void fmj_3dtrans_init(FMJ3DTrans* ot)
 {
-    ot->r = quaternion_look_rotation(f3_create(0,1,0),f3_create(0,0,1));
+    ot->r = quaternion_identity();
     ot->s = f3_create(1,1,1);
     ot->p = f3_create(0,0,0);
     fmj_3dtrans_update(ot);

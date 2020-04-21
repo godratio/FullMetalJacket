@@ -1133,7 +1133,7 @@ quaternion nlerp(quaternion q1,quaternion q2,float t)
     return qn;
 }
 
-quaternion inverse(quaternion q)
+quaternion quaternion_inverse(quaternion q)
 {
     return quaternion_conjugate(quaternion_normalize(q));
 }

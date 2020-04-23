@@ -882,5 +882,6 @@ struct FMJRenderCommand
 
 //END RENDER COMMAND API
 
+
 #define FMJ_TYPES_H
 #endif

@@ -30,6 +30,9 @@ void fmj_3dtrans_init(FMJ3DTrans* ot)
     ot->r = quaternion_identity();
     ot->s = f3_create(1,1,1);
     ot->p = f3_create(0,0,0);
+    ot->local_r = quaternion_identity();
+    ot->local_s = f3_create(1,1,1);
+    ot->local_p = f3_create(0,0,0);
     fmj_3dtrans_update(ot);
 }
 

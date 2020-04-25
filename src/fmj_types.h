@@ -854,6 +854,7 @@ struct FMJRenderGeometry
     u64 index_id;
     u64 index_count;
     bool is_indexed;
+    f4 base_color;
 }typedef FMJRenderGeometry;
 
 struct FMJRenderMaterial
@@ -863,6 +864,7 @@ struct FMJRenderMaterial
     f4 scissor_rect;
     f4 viewport_rect;
     u64 metallic_roughness_texture_id;
+    f4 base_color;
 }typedef FMJRenderMaterial;
 
 struct FMJRenderCommand

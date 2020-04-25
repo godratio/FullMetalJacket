@@ -498,6 +498,8 @@ f3 f3_s_mul(f32 a,f3 b);
 f3 f3_div(f3 a,f3 b);
 f3 f3_s_div(f32 a,f3 b);
 f3 f3_div_s(f3 a,f32 b);
+f3 f3_world_local_p(f4x4 m,f3 a);
+f3 f3_local_world_p(f4x4 m,f3 a);
 
 f4 f4_create(f32 a,f32 b,f32 c,f32 d);
 f4 f4_create_f(f32 a);
@@ -551,6 +553,11 @@ quaternion quaternion_create_f4(f4 a);
 quaternion quaternion_look_rotation(f3 forward, f3 up);
 quaternion quaternion_identity();
 quaternion quaternion_mul(quaternion a,quaternion b);
+f3 quaternion_mul_f3(quaternion q, f3 dir);
+f3 quaternion_forward(quaternion q);
+f3 quaternion_up(quaternion q);
+f3 quaternion_right(quaternion q);
+
 quaternion quaternion_normalize(quaternion a);
 f32 quaternion_dot(quaternion a, quaternion b);
 f32 quaternion_length(quaternion q);

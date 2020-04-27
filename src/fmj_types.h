@@ -481,6 +481,7 @@ f2 f2_s_sub(f32 a,f2 b);
 f2 f2_sub_s(f2 a,f32 b);
 f2 f2_mul(f2 a,f2 b);
 f2 f2_s_mul(f32 a,f2 b);
+f2 f2_mul_s(f2 b,f32 a);
 f2 f2_div(f2 a,f2 b);
 f2 f2_s_div(f32 a,f2 b);
 f2 f2_div_s(f2 a,f32 b);

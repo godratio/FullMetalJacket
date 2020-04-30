@@ -89,6 +89,27 @@ APIDEF FMJString fmj_string_create(char* c,FMJMemoryArena* arena)
     return fmj_string_null_terminate(result,arena);
 }
 
+//TODO(Ray):Add padding as the temp buffer length does not take into account the parameters
+//length.  So we need a way to get the length of all the parameters possible values or some
+//reasonable maximum. for now we just add in the max length ever  time which we choose as a relatively small number.
+#define FMJ_STRING_MAX_FORMAT_STRING_LENGTH 100
+APIDEF FMJString fmj_string_create_formatted(char* fmt,FMJMemoryArena* scratch_arena,FMJMemoryArena* arena, ...)
+{
+//    u32 length = fmj_string_char_length_safe(fmt,FMJ_STRING_MAX_FORMAT_STRING_LENGTH);
+    u32 length = FMJ_STRING_MAX_FORMAT_STRING_LENGTH;
+    
+    FMJMemoryArenaPushParams pp = fmj_arena_push_params_no_clear();
+    pp.alignment = 1;
+
+//    void* buf = PUSHSIZE(scratch_arena,length,pp);
+    void* buf = PUSHSIZE(scratch_arena,length,pp);    
+    va_list args;
+    va_start(args, arena);
+    vsnprintf(buf, length, fmt, args);    
+    va_end(args);
+    return fmj_string_create_from_length((char*)buf,length,arena);
+}
+
 APIDEF FMJString fmj_string_create_from_ptr(char* start,char* end,FMJMemoryArena* arena)
 {
     FMJString result = {0};

@@ -133,7 +133,8 @@ APIDEF u32 fmj_string_char_length_safe(char* String,u32 SafetyLength);
 APIDEF FMJString fmj_string_create(char* c,FMJMemoryArena* Memory);
 APIDEF FMJString fmj_string_create_from_ptr(char* start,char* end,FMJMemoryArena* arena);
 APIDEF FMJString fmj_string_create_from_length(char* start,umm length,FMJMemoryArena* arena);
-
+APIDEF FMJString fmj_string_create_formatted(char* fmt,FMJMemoryArena* scratch_arena,FMJMemoryArena* arena, ...);
+    
 APIDEF bool fmj_string_cmp(FMJString a, FMJString b);
 APIDEF bool fmj_string_cmp_char(FMJString a,const char* b);
 APIDEF bool fmj_string_cmp_char_to_char(const char* a,const char* b,u32 max_itr);

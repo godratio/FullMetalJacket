@@ -276,3 +276,31 @@ FMJFileReadResult fmj_file_platform_read_entire_file(char* file_name)
 	return result;
 }
 
+bool fmj_write_to_file_(FILE* file, void* mem,u64 size, bool is_done)
+{
+    bool result = false;
+    fwrite(mem, size, 1, file);
+    if (ferror(file))
+    {
+        result = false;
+    }
+    else
+    {
+        result = true;
+    }
+    if(is_done)
+    {
+        fclose(file);
+    }
+    return result;
+}
+
+bool fmj_file_platform_write_memory(FMJFilePointer* file,char* file_name,void* mem,u64 size,bool is_done,char* options)
+{
+	if(file->file == NULL)
+	{
+		file->file = fopen(file_name, options);
+	}
+	return fmj_write_to_file_(file->file,mem, size,is_done);
+}
+

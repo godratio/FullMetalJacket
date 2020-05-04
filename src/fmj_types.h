@@ -182,7 +182,6 @@ void fmj_fixed_buffer_clear(FMJFixedBuffer *buffer);
 void fmj_fixed_buffer_free(FMJFixedBuffer *buffer);
 void fmj_fixed_buffer_pop(FMJFixedBuffer* buffer);
 
-
 //Stretchy 
 struct FMJStretchBuffer
 {
@@ -322,8 +321,14 @@ struct FMJFileHandle
 	FILE* file;
 } typedef FMJFileHandle;
 
+struct FMJFilePointer
+{
+	FILE* file;
+}typedef FMJFilePointer;
+
 FMJFileDirInfoResult fmj_file_platform_get_all_files_in_dir(char* path, FMJMemoryArena* arena);
 FMJFileReadResult fmj_file_platform_read_entire_file(char* file_name);
+bool fmj_file_platform_write_memory(FMJFilePointer* file,char* file_name,void* mem,u64 size,bool is_done,char* options);
 //END FILE API
 
 //BEGIN THREAD API

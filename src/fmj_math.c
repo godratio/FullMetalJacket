@@ -1241,6 +1241,19 @@ f3 f3_local_world_p(f4x4 m,f3 a)
     return f3_create(result.x,result.y,result.z);
 }
 
+//TODO(ray):Not tested
+f3 f3_world_local_dir(f4x4 m,f3 a)
+{
+    f4 result = f4x4_mul_f4(f4x4_inverse(m),f4_create(a.x,a.y,a.z,0.0f));
+    return f3_create(result.x,result.y,result.z);
+}
+
+f3 f3_local_world_dir(f4x4 m,f3 a)
+{
+    f4 result = f4x4_mul_f4(m,f4_create(a.x,a.y,a.z,0.0f));
+    return f3_create(result.x,result.y,result.z);
+}
+
 f3 quaternion_mul_f3(quaternion q, f3 dir)
 {
 	f3 qv = f3_create(q.x,q.y,q.z);
@@ -1322,3 +1335,7 @@ f2 f2_world_to_screen_point(f4x4 projection_matrix,f4x4 camera_matrix,f2 buffer_
 	return Result;
 }
 
+f3 f3_project_on_plane(f3 v,f3 plane_normal)
+{
+	return f3_mul(f3_sub_s(v,f3_dot(v, plane_normal)),plane_normal);
+}

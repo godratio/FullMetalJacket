@@ -17,6 +17,19 @@ f3 fmj_3dtrans_local_to_world_pos(FMJ3DTrans* ot,f3 a)
 	return f3_local_world_p(ot->m,a);
 }
 
+f3 fmj_3dtrans_world_to_local_dir(FMJ3DTrans* ot,f3 a)
+{
+    fmj_3dtrans_matrix_set(ot);
+	return f3_world_local_dir(ot->m,a);
+}
+
+f3 fmj_3dtrans_local_to_world_dir(FMJ3DTrans* ot,f3 a)
+{
+    fmj_3dtrans_matrix_set(ot);
+	return f3_local_world_dir(ot->m,a);
+}
+
+
 void fmj_3dtrans_update(FMJ3DTrans* ot)
 {
     fmj_3dtrans_matrix_set(ot);

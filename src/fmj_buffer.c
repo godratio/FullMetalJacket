@@ -190,8 +190,8 @@ void* fmj_stretch_buffer_get_any_(FMJStretchBuffer* buffer,u64 index)
 
 void fmj_stretch_buffer_check_in(FMJStretchBuffer* buffer)
 {
-    ASSERT(buffer->borrow_count > 0);
-    buffer->borrow_count--;
+    if(buffer->borrow_count > 0)
+        buffer->borrow_count--;
 }
 
 void fmj_fixed_buffer_clear_item(FMJFixedBuffer* b,u64 i)

@@ -507,6 +507,8 @@ f3 f3_s_div(f32 a,f3 b);
 f3 f3_div_s(f3 a,f32 b);
 f3 f3_world_local_p(f4x4 m,f3 a);
 f3 f3_local_world_p(f4x4 m,f3 a);
+f3 f3_world_local_dir(f4x4 m,f3 a);
+f3 f3_local_world_dir(f4x4 m,f3 a);
 
 f4 f4_create(f32 a,f32 b,f32 c,f32 d);
 f4 f4_create_f(f32 a);
@@ -732,6 +734,7 @@ f3 f3_rotate(quaternion q, f3 dir);
 f32 f32_random_range(f32 a, f32 b);
 f3 f3_screen_to_world_point(f4x4 projection_matrix,f4x4 cam_matrix,f2 buffer_dim, f2 screen_xy,f32 z_depth);
 f2 f2_world_to_screen_point(f4x4 projection_matrix,f4x4 camera_matrix,f2 buffer_dim, f3 p);
+f3 f3_project_on_plane(f3 v,f3 plane_normal);
 //END MATH API
 
 //BEGIN 3D Tranform api
@@ -758,6 +761,9 @@ struct FMJ3DTrans
 void fmj_3dtrans_matrix_set(FMJ3DTrans* ot);
 f3 fmj_3dtrans_world_to_local_pos(FMJ3DTrans* ot,f3 a);
 f3 fmj_3dtrans_local_to_world_pos(FMJ3DTrans* ot,f3 a);
+f3 fmj_3dtrans_world_to_local_dir(FMJ3DTrans* ot,f3 a);
+f3 fmj_3dtrans_local_to_world_dir(FMJ3DTrans* ot,f3 a);
+
 void fmj_3dtrans_update(FMJ3DTrans* ot);
 void fmj_3dtrans_init(FMJ3DTrans* ot);
 f4x4 fmj_3dtrans_set_cam_view(FMJ3DTrans* ot);

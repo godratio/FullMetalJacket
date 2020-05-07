@@ -108,9 +108,6 @@ FMJMemoryArenaPushParams fmj_arena_push_params_no_clear();
 FMJMemoryArena fmj_arena_init(umm size, void* base);
 FMJMemoryArena fmj_arena_allocate(umm size);
 
-FMJMemoryArena fmj_arena_init(umm size, void* base);
-FMJMemoryArena fmj_arena_allocate(umm size);
-
 void fmj_arena_deallocate(FMJMemoryArena *arena, bool clear_mem_to_zero);
 void fmj_arena_free(FMJMemoryArena* arena);
 //END MEMORY API
@@ -329,6 +326,7 @@ struct FMJFilePointer
 FMJFileDirInfoResult fmj_file_platform_get_all_files_in_dir(char* path, FMJMemoryArena* arena);
 FMJFileReadResult fmj_file_platform_read_entire_file(char* file_name);
 bool fmj_file_platform_write_memory(FMJFilePointer* file,char* file_name,void* mem,u64 size,bool is_done,char* options);
+void fmj_file_free_result(FMJFileReadResult* result);
 //END FILE API
 
 //BEGIN THREAD API
@@ -495,6 +493,7 @@ f2 f2_div_s(f2 a,f32 b);
 f3 f3_create(f32 a,f32 b,f32 c);
 f3 f3_create_f(f32 a);
 f3 f3_add(f3 a,f3 b);
+f3 f3_add_s(f3 a,f32 b);
 f3 f3_s_add(f32 a,f3 b);
 f3 f3_sub(f3 a,f3 b);
 f3 f3_s_sub(f32 a,f3 b);
@@ -720,7 +719,19 @@ f2  f2_degrees(f2 x);
 f3  f3_degrees(f3 x);
 f4  f4_degrees(f4 x);
 
+f2 f2_negate(f2 x);
+f3 f3_negate(f3 x);
 f4 f4_negate(f4 x);
+
+
+//adapted from here http://tomyeah.com/signed-angle-between-two-vectors3d-in-cc/
+//excerpt pastd below in case link is down.
+//I tried to realize some point-in-polygon-test in 3D for my raytracer and came upon the problem to calculate a signed angle between 2 vectors. Trying to find this in the web was not easy, somehow most people project the polygon plane and the point into 2d and do the test there. But here is the method i found:
+//signed_angle = atan2(  N * ( V1 x V2 ), V1 * V2  );
+// where * is dot product and x is cross product
+// N is the normal to the polygon
+// ALL vectors: N, V1, V2 must be normalized
+f32 f3_signed_angle(f3 from ,f3 to ,f3 axis);
 
 f4x4 init_pers_proj_matrix(f2 buffer_dim, f32 fov_y, f2 far_near);
 //NOTE(Ray):When using this function remember that you have to take into account

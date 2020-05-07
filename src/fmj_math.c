@@ -504,7 +504,17 @@ f2  f2_degrees(f2 x) { return f2_mul_s(x,57.295779513f); }
 f3  f3_degrees(f3 x) { return f3_mul_s(x,57.295779513f); }
 f4  f4_degrees(f4 x) { return f4_mul_s(x,57.295779513f); }
 
+f2 f2_negate(f2 x){return f2_create(-x.x,-x.y);}
+f3 f3_negate(f3 x){return f3_create(-x.x,-x.y,-x.z);}
 f4 f4_negate(f4 x){return f4_create(-x.x,-x.y,-x.z,-x.w);}
+
+f32 f3_signed_angle(f3 from ,f3 to ,f3 axis)
+{
+    from = f3_normalize(from);
+    to = f3_normalize(to);
+    axis = f3_normalize(axis);
+    return atan2(f3_dot(axis,cross(from,to)),f3_dot(from,to));
+}
 
 f3x3 f3x3_identity()
 {

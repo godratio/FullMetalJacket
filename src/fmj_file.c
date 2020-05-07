@@ -7,10 +7,14 @@ FMJFileDirInfoResult fmj_file_win32_get_all_files_indir_(char* path, FMJMemoryAr
 	FMJFileDirInfoResult result = {0};
 	FMJString wild_card_path = fmj_string_append_char_to_char(path,"\\*", arena);
 	result.files = fmj_fixed_buffer_init(1000, sizeof(FMJFileInfo),8);
-	LPWIN32_FIND_DATAA ffd;
+
+    WIN32_FIND_DATA find_file_data;
+//	LPWIN32_FIND_DATAA ffd;
 	HANDLE h_find = INVALID_HANDLE_VALUE;
 	LARGE_INTEGER filesize;
-	h_find = FindFirstFileA(wild_card_path.string, ffd);
+
+//    h_find = FindFirstFileA(wild_card_path.string, ffd);
+	h_find = FindFirstFileA(wild_card_path.string,&find_file_data);    
 	if (INVALID_HANDLE_VALUE == h_find)
 	{
 		return result;
@@ -18,19 +22,19 @@ FMJFileDirInfoResult fmj_file_win32_get_all_files_indir_(char* path, FMJMemoryAr
 
 	do
 	{
-		if (ffd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		if (find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 		}
 		else
 		{
-			filesize.LowPart = ffd->nFileSizeLow;
-			filesize.HighPart = ffd->nFileSizeHigh;
+			filesize.LowPart = find_file_data.nFileSizeLow;
+			filesize.HighPart = find_file_data.nFileSizeHigh;
 			FMJFileInfo info = {0};
-			info.name = fmj_string_create(ffd->cFileName, arena);
+			info.name = fmj_string_create(find_file_data.cFileName, arena);
 			fmj_fixed_buffer_push(&result.files, &info);
 		}
 	}
-	while (FindNextFileA(h_find, ffd) != 0);
+	while (FindNextFileA(h_find, &find_file_data) != 0);
 	return result;
 }
 
@@ -288,6 +292,7 @@ bool fmj_write_to_file_(FILE* file, void* mem,u64 size, bool is_done)
     {
         result = true;
     }
+
     if(is_done)
     {
         fclose(file);
@@ -303,4 +308,9 @@ bool fmj_file_platform_write_memory(FMJFilePointer* file,char* file_name,void* m
 	}
 	return fmj_write_to_file_(file->file,mem, size,is_done);
 }
+
+void fmj_file_free_result(FMJFileReadResult* result)
+{
+    fmj_os_deallocate(result->content,result->content_size);
+};
 

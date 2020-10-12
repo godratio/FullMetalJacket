@@ -261,6 +261,35 @@ void fmj_hashtable_remove(FMJHashTable* h_table,void* key);
 bool fmj_hashtable_contains(FMJHashTable* h_table,void* key,uint64_t size);
 //END HASHTABLE
 
+//BEGIN VARSIZEHASHTABLE
+struct FMJHashKey
+{
+	u64 value_index;
+    u64 backing_index;
+	u32 collision_count;
+    int collision_head_index;
+    struct FMJHashCollision* collision_head;
+} typedef FMJHashKey;
+
+struct FMJHashValue
+{
+	void* value_ptr;
+} typedef FMJHashValue;
+
+struct FMJHash
+{
+    FMJStretchBuffer key_backing_array;
+	FMJStretchBuffer keys;
+	FMJStretchBuffer values;
+    FMJStretchBuffer collisions;
+    FMJStretchBuffer collision_free_list;
+    u64 table_size;
+    u64 collision_count;
+}typedef FMJHash;
+
+bool fmj_hash_create();
+//END VARSIZEHASHTABLE
+
 //BEGIN ANYTHING CACHE
 struct AnyCache
 {
@@ -287,7 +316,7 @@ void fmj_anycache_remove(AnyCache* cache,void* key);
 void fmj_anycache_remove_free_list(AnyCache* cache,void* key);
 void* fmj_anycache_get_(AnyCache* cache,void* key);
 void* fmj_anycache_checkout_(AnyCache* cache,void* key);
-void fmj_anycache_checkin_(AnyCache* cache,void* key);
+void fmj_anycache_checkin_(AnyCache* cache);
 void fmj_anycache_reset(AnyCache* cache);
 void* fmj_anycache_checkout_first_free_(AnyCache* cache);
 void* fmj_anycache_checkout_first_free_with_predicate_(AnyCache* cache,bool (*predicate)(void*));

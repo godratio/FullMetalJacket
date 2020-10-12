@@ -331,7 +331,18 @@ f32 f2_dot(f2 a, f2 b)
 
 f32 f3_dot(f3 a, f3 b)
 {
-    return f3_sum(f3_mul(a,b));
+    f3 aa = f3_mul(a,b);
+    if(isnan(aa.x))
+    {
+        ASSERT(false);
+    }
+
+    f32 result = f3_sum(aa);
+    if(isnan(result))
+    {
+        ASSERT(false);
+    }
+    return result;
 }
 
 f32 f4_dot(f4 a, f4 b)
@@ -479,9 +490,25 @@ f2 f2_reflect(f2 i, f2 n)
 f3 f3_reflect(f3 i, f3 n)
 {
     f32 dp = f3_dot(i,n);
+    if(isnan(dp))
+    {
+        ASSERT(false);
+    }
     f3 ip = f3_mul_s(n,dp);
+    if(isnan(ip.x))
+    {
+        ASSERT(false);
+    }    
     f3 sp = f3_s_mul(2,ip);
+    if(isnan(sp.x))
+    {
+        ASSERT(false);
+    }    
     f3 result = f3_sub(i,sp);
+    if(isnan(result.x))
+    {
+        ASSERT(false);
+    }
     return result;
 }
 
@@ -507,6 +534,7 @@ f4  f4_degrees(f4 x) { return f4_mul_s(x,57.295779513f); }
 f2 f2_negate(f2 x){return f2_create(-x.x,-x.y);}
 f3 f3_negate(f3 x){return f3_create(-x.x,-x.y,-x.z);}
 f4 f4_negate(f4 x){return f4_create(-x.x,-x.y,-x.z,-x.w);}
+
 
 f32 f3_signed_angle(f3 from ,f3 to ,f3 axis)
 {

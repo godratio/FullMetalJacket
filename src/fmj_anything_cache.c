@@ -15,30 +15,10 @@ AnyCache fmj_anycache_init(u32 max_hash_states,umm size_of_thing,umm size_of_key
     result.is_init = true;
     return result;
 }
-
-AnyCache fmj_anycache_anysize_init(u32 max_hash_states,umm size_of_thing,bool use_free_list)
-{
-    AnyCache result = {0};
-    umm size_of_free_list_entry_index = sizeof(umm);
-    result.key_size = 0;
-    result.hash = fmj_hashtable_init_(max_hash_states);
-    result.anythings = fmj_stretch_buffer_init(10,size_of_thing,DEFAULT_ALIGNMENT);
-    result.is_using_free_list = use_free_list;
-
-    if(use_free_list)
-        result.free_list = fmj_stretch_buffer_init(1,size_of_free_list_entry_index,DEFAULT_ALIGNMENT);
-    result.is_init = true;
-    return result;
-}
     
 bool fmj_anycache_exist(AnyCache* cache,void* key)
 {
     return fmj_hashtable_contains(&cache->hash,key,cache->key_size);
-}
-    
-bool fmj_anycache_anysize_exist(AnyCache* cache,void* key,u64 keysize)
-{
-    return fmj_hashtable_contains(&cache->hash,key,keysize);
 }
 
 bool fmj_anycache_anykeysize_add_to_free_list(AnyCache* cache,void* key,u64 keysize,void* thing)

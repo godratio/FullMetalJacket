@@ -331,7 +331,18 @@ f32 f2_dot(f2 a, f2 b)
 
 f32 f3_dot(f3 a, f3 b)
 {
-    return f3_sum(f3_mul(a,b));
+    f3 aa = f3_mul(a,b);
+    if(isnan(aa.x))
+    {
+        ASSERT(false);
+    }
+
+    f32 result = f3_sum(aa);
+    if(isnan(result))
+    {
+        ASSERT(false);
+    }
+    return result;
 }
 
 f32 f4_dot(f4 a, f4 b)
@@ -479,9 +490,25 @@ f2 f2_reflect(f2 i, f2 n)
 f3 f3_reflect(f3 i, f3 n)
 {
     f32 dp = f3_dot(i,n);
+    if(isnan(dp))
+    {
+        ASSERT(false);
+    }
     f3 ip = f3_mul_s(n,dp);
+    if(isnan(ip.x))
+    {
+        ASSERT(false);
+    }    
     f3 sp = f3_s_mul(2,ip);
+    if(isnan(sp.x))
+    {
+        ASSERT(false);
+    }    
     f3 result = f3_sub(i,sp);
+    if(isnan(result.x))
+    {
+        ASSERT(false);
+    }
     return result;
 }
 
@@ -504,7 +531,18 @@ f2  f2_degrees(f2 x) { return f2_mul_s(x,57.295779513f); }
 f3  f3_degrees(f3 x) { return f3_mul_s(x,57.295779513f); }
 f4  f4_degrees(f4 x) { return f4_mul_s(x,57.295779513f); }
 
+f2 f2_negate(f2 x){return f2_create(-x.x,-x.y);}
+f3 f3_negate(f3 x){return f3_create(-x.x,-x.y,-x.z);}
 f4 f4_negate(f4 x){return f4_create(-x.x,-x.y,-x.z,-x.w);}
+
+
+f32 f3_signed_angle(f3 from ,f3 to ,f3 axis)
+{
+    from = f3_normalize(from);
+    to = f3_normalize(to);
+    axis = f3_normalize(axis);
+    return atan2(f3_dot(axis,cross(from,to)),f3_dot(from,to));
+}
 
 f3x3 f3x3_identity()
 {
@@ -657,7 +695,6 @@ f4x4 f4x4_create_from_quaternion_translation(quaternion r,f3 t)
 {
     f4x4 result = {0};
     f3x3 rot = f3x3_create_from_quaternion(r);
-	rot = f3x3_transpose(rot);
 	result.c0 = f4_create(rot.c0.x,rot.c0.y,rot.c0.z,0.0f);
     result.c1 = f4_create(rot.c1.x,rot.c1.y,rot.c1.z,0.0f);
 	result.c2 = f4_create(rot.c2.x,rot.c2.y,rot.c2.z,0.0f);
@@ -1054,7 +1091,7 @@ quaternion quaternion_look_rotation(f3 forward, f3 up)
         q.x = ((m12 - m21) * num);
         q.y = ((m20 - m02) * num);
         q.z = ((m01 - m10) * num);
-        return f4_normalize((q));
+        return quaternion_normalize(q);
     }
 
     if ((m00 >= m11) && (m00 >= m22))
@@ -1065,7 +1102,7 @@ quaternion quaternion_look_rotation(f3 forward, f3 up)
         q.y = ((m01 + m10) * num4);
         q.z = ((m02 + m20) * num4);
         q.w = ((m12 - m21) * num4);
-        return f4_normalize((q));
+        return quaternion_normalize(q);
     }
     
     if (m11 > m22)
@@ -1076,7 +1113,7 @@ quaternion quaternion_look_rotation(f3 forward, f3 up)
         q.y = (0.5f * num6);
         q.z = ((m21 + m12) * num3);
         q.w = ((m20 - m02) * num3);
-        return f4_normalize((q));
+        return quaternion_normalize(q);
     }
     
     f32 num5 = sqrt(((1.0f + m22) - m00) - m11);
@@ -1085,12 +1122,11 @@ quaternion quaternion_look_rotation(f3 forward, f3 up)
     q.y = ((m21 + m12) * num2);
     q.z = (0.5f * num5);
     q.w = ((m01 - m10) * num2);
-    return f4_normalize((q));
+    return quaternion_normalize(q);
 }
 
 quaternion quaternion_mul(quaternion q1, quaternion q2)
 {
-	
 	return quaternion_create(
 		q1.x * q2.w + q1.y * q2.z - q1.z * q2.y + q1.w * q2.x,
 		-q1.x * q2.z + q1.y * q2.w + q1.z * q2.x + q1.w * q2.y,
@@ -1215,10 +1251,13 @@ f4x4 set_camera_view(f3 p,f3 d,f3 u)
 	f3 cam_right = cross(u, d);
 	f3 cam_up = cross(d, cam_right);
 	d = f3_normalize(d);
- 	return f4x4_create(cam_right.x,     cam_up.x,     d.x,     0,
-                     cam_right.y,     cam_up.y,     d.y,     0,
-                     cam_right.z,     cam_up.z,     d.z,     0,
-                    -f3_dot(cam_right, p),-f3_dot(cam_up, p),-f3_dot(d, p),1.0f);
+    f4x4 result = {0};
+	result.c0 = f4_create(cam_right.x,cam_up.x,d.x,0.0f);
+    result.c1 = f4_create(cam_right.y,cam_up.y,d.y,0.0f);
+	result.c2 = f4_create(cam_right.z,cam_up.z,d.z,0.0f);
+    result.c3 = f4_create(-f3_dot(cam_right, p),-f3_dot(cam_up, p),-f3_dot(d, p),1.0f);
+    
+ 	return result;
 }
 
 quaternion f3_axis_angle(f3 axis,f32 angle)
@@ -1258,7 +1297,10 @@ f3 quaternion_mul_f3(quaternion q, f3 dir)
 {
 	f3 qv = f3_create(q.x,q.y,q.z);
 	f3 t = f3_s_mul(2,cross(dir,qv));
-    return f3_add(dir,f3_add(f3_s_mul(q.w,t),cross(t,qv)));
+    f3 a = f3_s_mul(q.w,t);
+    f3 b = cross(t,qv);
+    f3 c = f3_add(dir,a);
+    return f3_add(c,b);
 }
 
 f3 quaternion_forward(quaternion q)
@@ -1337,5 +1379,9 @@ f2 f2_world_to_screen_point(f4x4 projection_matrix,f4x4 camera_matrix,f2 buffer_
 
 f3 f3_project_on_plane(f3 v,f3 plane_normal)
 {
-	return f3_mul(f3_sub_s(v,f3_dot(v, plane_normal)),plane_normal);
+    f32 a = f3_dot(v, plane_normal);
+    f3 c = f3_s_mul(a,plane_normal);
+    f3 b = f3_sub(v,c);
+
+	return b;
 }
